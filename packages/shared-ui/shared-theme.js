@@ -2,7 +2,7 @@
 
 const PALETTE = {
   light: {
-    bg: "#F4F0DD",
+    bg: "c",
     surface: "#FAF8F0",
     surfaceRaised: "#FFFFFF",
     text: "#24221B",

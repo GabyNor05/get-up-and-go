@@ -1,4 +1,4 @@
-const sharedTheme = require('../../../shared-theme');
+const sharedTheme = require('../../packages/shared-ui/shared-theme.js');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

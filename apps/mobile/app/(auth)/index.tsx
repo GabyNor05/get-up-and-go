@@ -3,7 +3,7 @@ import { Redirect } from "expo-router";
 
 import "../../global.css";
 
-const isNewUser = true;
+const isNewUser = false;
 
 const LoginScreen = () => {
   if (!isNewUser) {
