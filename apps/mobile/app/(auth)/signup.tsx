@@ -1,19 +1,25 @@
 import { View, Pressable, Text, TextInput, Image } from "react-native";
 import { Plus, UserRound } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { useRouter, Redirect } from "expo-router";
 import { useFonts } from "expo-font";
 
+const isNewUser = false;
 
 export default function SignUpScreen() {
   const router = useRouter();
-  const [fontsLoaded] = useFonts({
+
+  if (isNewUser) {
+    return <Redirect href="/signup" />;
+  } 
+
+  /* const [fontsLoaded] = useFonts({
     "A Day without Sun": require("../../../../packages/shared-ui/assets/fonts/A-Day-Without-Sun-Text-Bold-TRIAL.ttf"),
   });
 
   if (!fontsLoaded) {
     return null;
   }
-
+ */
   function Validate(email: string, password: string) {
 
   }
