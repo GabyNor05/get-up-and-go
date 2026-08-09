@@ -1,0 +1,28 @@
+{
+  "name": "get-up-and-go",
+  "version": "1.0.0",
+  "description": "> A cross-platform ecosystem featuring a **React Native mobile application** and a companion **React web portal** for social activity planning, real-time event discovery, dynamic circle management, and community engagement.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GabyNor05/get-up-and-go.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/GabyNor05/get-up-and-go/issues"
+  },
+  "homepage": "https://github.com/GabyNor05/get-up-and-go#readme",
+  "dependencies": {
+    "firebase": "^12.17.1"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

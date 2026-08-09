@@ -1,0 +1,106 @@
+# ==========================================
+# DEPENDENCIES (Monorepo & Nested)
+# ==========================================
+node_modules/
+**/node_modules/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+
+# ==========================================
+# ENVIRONMENT & SECRETS
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+# Firebase private keys & service accounts
+*firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+
+# ==========================================
+# BUILD OUTPUTS & BUNDLES
+# ==========================================
+# Web build output
+/apps/web/build/
+/apps/web/dist/
+/apps/web/out/
+
+# Mobile build output
+/apps/mobile/dist/
+/apps/mobile/web-build/
+
+# General build logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ==========================================
+# REACT NATIVE & EXPO SPECIFICS
+# ==========================================
+# Expo
+.expo/
+.expo-shared/
+web-build/
+
+# iOS / Xcode
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+apps/mobile/ios/*.xcworkspace
+apps/mobile/ios/*.xcodeproj/project.xcworkspace
+apps/mobile/ios/*.xcodeproj/xcuserdata/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.app
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Android / Gradle
+apps/mobile/android/.gradle/
+apps/mobile/android/app/build/
+apps/mobile/android/build/
+apps/mobile/android/captures/
+*.apk
+*.aab
+*.keystore
+!apps/mobile/android/app/debug.keystore
+
+# Metro / React Native bundler
+.metro-health-check*
+*.metro-cache/
+
+# ==========================================
+# TESTING & COVERAGE
+# ==========================================
+/coverage/
+**/coverage/
+.nyc_output/
+
+# ==========================================
+# IDE & SYSTEM FILES
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# VS Code / JetBrains
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

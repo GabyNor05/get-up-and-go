@@ -1,5 +1,6 @@
 import { View, Text, Pressable, TextInput } from "react-native";
 import { Redirect, useRouter } from "expo-router";
+import { auth, db } from "@get-up-and-go/firebase";
 
 const isNewUser = true;
 
