@@ -1,10 +1,18 @@
 import { View, Pressable, Text, TextInput, Image } from "react-native";
 import { Plus, UserRound } from "lucide-react-native";
 import { useRouter } from "expo-router";
-/* import gLogo from "../../assets/googleLogo.png"; */
+import { useFonts } from "expo-font";
+
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const [fontsLoaded] = useFonts({
+    "A Day without Sun": require("../../../../packages/shared-ui/assets/fonts/A-Day-Without-Sun-Text-Bold-TRIAL.ttf"),
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   function Validate(email: string, password: string) {
 
@@ -28,11 +36,15 @@ export default function SignUpScreen() {
   };
 
   return (
-    <View className="Flex-1 mx-3 my-5 bg-[#FAF8F0] ">
-      <Text>Sign Up</Text>
+    <View className="Flex-1 justify-center px-4 h-full w-full bg-[#FAF8F0] ">
+      <Text className="text-[#352C53] text-[40px] text-center mb-7 font-bold" 
+      /* style={{ fontFamily: "A Day without Sun" }} */
+      >
+        Sign Up
+      </Text>
 
       {/* Avatar Picker */}
-      <View className="flex items-center justify-center">
+      <View className="flex items-center justify-center mb-8">
         <View className="flex items-center justify-center size-36 rounded-full bg-[#C5D993]">
           <UserRound size={70} />
         </View>
@@ -45,48 +57,49 @@ export default function SignUpScreen() {
       </View>
 
       {/* Sign Up Form */}
-      <View>
-        <View>
+      <View className="flex flex-col gap-4 ">
+        <View className="flex flex-col gap-2">
           <Text>Username</Text>
           <TextInput
             placeholder="Enter your username"
-            className="w-full rounded-lg border border-gray-300 px-4 py-2"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 h-9"
             enterKeyHint="next"
           />
         </View>
-        <View>
+        <View className="flex flex-col gap-2 ">
           <Text>Email</Text>
           <TextInput
             placeholder="Enter your email"
-            className="w-full rounded-lg border border-gray-300 px-4 py-2"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 h-9"
             keyboardType="email-address"
             enterKeyHint="next"
           />
         </View>
-        <View>
+        <View className="flex flex-col gap-2 ">
           <Text>Password</Text>
           <TextInput
             placeholder="Enter your password"
-            className="w-full rounded-lg border border-gray-300 px-4 py-2"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2 h-9"
             secureTextEntry
             enterKeyHint="done"
             /* inlineImageLeft={Eye} */
           />
         </View>
         <Pressable
-          className="w-full rounded-lg bg-[#64539E] px-4 py-3 items-center justify-center"
+          className="w-full h-10 rounded-lg bg-[#64539E] px-4 py-3 items-center justify-center mb-8"
           onPress={handleSignUp}
         >
-          <Text> Sign Up</Text>
+          <Text className="text-white"> Sign Up</Text>
         </Pressable>
       </View>
 
-      {/* Sign Up Alternatives */}
-      <View className="flex-row w-full items-center justify-between">
+      {/* OR decoration */}
+      <View className="flex-row w-full items-center justify-between mb-4">
         <Text>---------------</Text>
         <Text>OR</Text>
         <Text>---------------</Text>
       </View>
+
       {/* Google */}
       <View className="w-full rounded-lg bg-[#ffffff] px-4 py-3 items-center justify-center">
         <View className = "Flex flex-row items-center justify-center w-full bg-white">
