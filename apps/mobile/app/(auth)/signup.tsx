@@ -8,6 +8,16 @@ const isNewUser = false;
 export default function SignUpScreen() {
   const router = useRouter();
 
+  const COLORS = {
+  bg: "#F4F0DD",
+  surface: "#FAF8F0",
+  text: "#24221B",
+  muted: "#605E55",
+  border: "rgba(36,34,27,0.12)",
+  inputBg: "#FFFFFF",
+  primary: "#A88AED",
+};
+
   if (isNewUser) {
     return <Redirect href="/signup" />;
   } 
@@ -36,6 +46,10 @@ export default function SignUpScreen() {
       alert("Invalid email or password.");
     }
   };
+
+  const handleLogin = () => {
+    router.push("/(auth)");
+  }
 
   const handleAvatarPick = () => {
     return alert("Avatar picker not implemented yet.");
@@ -92,30 +106,19 @@ export default function SignUpScreen() {
           />
         </View>
         <Pressable
-          className="w-full h-10 rounded-lg bg-[#64539E] px-4 py-3 items-center justify-center mb-8"
+          className="w-full h-10 rounded-lg bg-[#64539E] px-4 py-3 items-center justify-center mt-4 mb-8"
           onPress={handleSignUp}
         >
           <Text className="text-white"> Sign Up</Text>
         </Pressable>
       </View>
 
-      {/* OR decoration */}
-      <View className="flex-row w-full items-center justify-between mb-4">
-        <Text>---------------</Text>
-        <Text>OR</Text>
-        <Text>---------------</Text>
-      </View>
-
-      {/* Google */}
-      <View className="w-full rounded-lg bg-[#ffffff] px-4 py-3 items-center justify-center">
-        <View className = "Flex flex-row items-center justify-center w-full bg-white">
-          {/* <Image source={gLogo} className="size-6" /> */}
-          <View className="size-6 bg-red-500 items-center justify-center">
-
+       <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 4 }}>
+            <Text style={{ fontSize: 14, color: COLORS.muted }}>Already have an account? </Text>
+            <Pressable onPress={handleLogin}>
+              <Text style={{ fontSize: 14, color: COLORS.primary, fontWeight: "600" }}>Log In</Text>
+            </Pressable>
           </View>
-          <Text> Sign Up with Google</Text>
-        </View>
-      </View>
     </View>
   );
 }
