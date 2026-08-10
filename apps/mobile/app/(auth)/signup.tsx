@@ -22,14 +22,14 @@ export default function SignUpScreen() {
     return <Redirect href="/signup" />;
   } 
 
-  /* const [fontsLoaded] = useFonts({
+/*  const [fontsLoaded] = useFonts({
     "A Day without Sun": require("../../../../packages/shared-ui/assets/fonts/A-Day-Without-Sun-Text-Bold-TRIAL.ttf"),
   });
 
   if (!fontsLoaded) {
     return null;
-  }
- */
+  } */
+ 
   function Validate(email: string, password: string) {
 
   }
