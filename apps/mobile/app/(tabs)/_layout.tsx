@@ -96,7 +96,7 @@ export default function TabLayout({darkMode}: Props) {
           marginBottom: 20,
           width: "95%",
           borderRadius: 100,
-          backgroundColor: bg,
+          backgroundColor: "#FAF8F0",
           borderTopWidth: 0,
           height: 68,
           paddingHorizontal: 8,
