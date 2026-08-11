@@ -16,8 +16,6 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: { 
-          display: "flex",
-          direction: "row",
           margin: "auto",
           marginBottom: 20,
           width: "95%",
@@ -37,35 +35,35 @@ export default function TabLayout() {
         name="(achievements)/index"
         options={{
           title: 'Achievements',
-          tabBarIcon: ({ color }) => <Award size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Award size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="(nearby)/index"
         options={{
           title: 'Happenings',
-          tabBarIcon: ({ color }) => <MapPinned size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <MapPinned size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="(home)/index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <House size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <House size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="(circles)/index"
         options={{
           title: 'My Circles',
-          tabBarIcon: ({ color }) => <UserRound size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <UserRound size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="(settings)/index"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color }) => <Settings size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Settings size={28} color={color} />,
         }}
       />
     </Tabs>
