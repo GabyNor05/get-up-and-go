@@ -1,160 +1,116 @@
-import { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { Plus, Search } from "lucide-react-native";
-import { useRouter } from "expo-router";
-import { avatarColors, circles, CircleItem } from "./circle-data";
+import { View, Text, Pressable, ScrollView } from "react-native";
+import {router} from "expo-router";
+import { Link2, Plus } from "lucide-react-native";
+import { CIRCLES, Circle, CircleMember } from "./circles-data";
+import { Header } from "@/components/textFormating";
 
+/* D:\Repos\get-up-and-go\packages\shared-ui\shared-ui.css */
 interface Props {
-  darkMode?: boolean;
+  darkMode: boolean;  
 }
 
-export default function CirclesScreen({ darkMode = false }: Props) {
-  const router = useRouter();
+const AVATAR_COLORS = ["#A88AED", "#A6C261", "#E8A84C", "#6CB8E8", "#E87D6C", "#B8A0E8", "#7DC98A"];
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+function onSelectCircle(id: number){
+  router.push(`./${id}`);
+}
+
+function onNewCircle(){
+  router.push("./newCircleForm");
+}
+
+function onJoinCircle(){
+
+}
+
+export default function CirclesScreen({ darkMode}: Props) {
   const bg = darkMode ? "#1A1A1A" : "#F4F0DD";
-  const surface = darkMode ? "#24221B" : "#FAF8F0";
   const text = darkMode ? "#FAF8F0" : "#24221B";
   const muted = darkMode ? "#B8B6AC" : "#605E55";
   const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
+  const surface = darkMode ? "#24221B" : "#FAF8F0";
+
+  const groups = chunk(CIRCLES, 4);
 
   return (
     <View style={{ flex: 1, backgroundColor: bg }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140 }}
-      >
-        <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
-          <Text
-            style={{
-              fontFamily: "Fredoka-SemiBold",
-              fontSize: 28,
-              fontWeight: "700",
-              color: text,
-            }}
-          >
-            My Circles
-          </Text>
-          <Text
-            style={{
-              fontSize: 13,
-              color: muted,
-              marginTop: 4,
-              marginBottom: 14,
-            }}
-          >
-            {circles.length} active groups · choose one with one thumb
-          </Text>
+      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+        {/* Header — no top-right button here, see note below */}
+        <View style={{ marginBottom: 20 }}>
+          <Header pageHeader="Welcome back!" subHeading={CIRCLES.length.toString() + " active groups"} />
 
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-              gap: 12,
-            }}
-          >
-            {circles.map((circle) => {
-              const isFullWidth =
-                circle.size === "featured" || circle.size === "wide";
-              return (
-                <View
-                  key={circle.name}
-                  style={{ width: isFullWidth ? "100%" : "48%" }}
-                >
-                  <CircleCard
-                    circle={circle}
-                    darkMode={darkMode}
-                    text={text}
-                    muted={muted}
-                    surface={surface}
-                    border={border}
-                    onPress={() =>
-                      router.push({
-                        pathname: "/(tabs)/(circles)/feed",
-                        params: { circleName: circle.name },
-                      })
-                    }
-                  />
-                </View>
-              );
-            })}
-          </View>
         </View>
+
+        {/* Bento grid — repeats the tall / normal+normal / wide pattern every 4 circles */}
+        {groups.map((group, gi) => (
+          <View key={gi} style={{ marginBottom: 12 }}>
+            <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
+              {group[0] && (
+                <View style={{ flex: 1 }}>
+                  <BentoCard circle={group[0]} darkMode={darkMode} variant="tall" onPress={() => onSelectCircle(group[0].id)} />
+                </View>
+              )}
+              {(group[1] || group[2]) && (
+                <View style={{ flex: 1, gap: 12 }}>
+                  {group[1] && <BentoCard circle={group[1]} darkMode={darkMode} variant="normal" onPress={() => onSelectCircle(group[1].id)} />}
+                  {group[2] && <BentoCard circle={group[2]} darkMode={darkMode} variant="normal" onPress={() => onSelectCircle(group[2].id)} />}
+                </View>
+              )}
+            </View>
+            {group[3] && <BentoCard circle={group[3]} darkMode={darkMode} variant="wide" onPress={() => onSelectCircle(group[3].id)} />}
+          </View>
+        ))}
       </ScrollView>
 
-      <View
-        style={{
-          position: "absolute",
-          left: 16,
-          right: 16,
-          bottom: 20,
-          flexDirection: "row",
-          gap: 10,
-        }}
-      >
+      {/* Bottom action bar — thumb zone.
+          FigmaMake put "+ New" top-right and a dashed "Find & Join a Circle" tile
+          inline in the grid. Both sit in the hardest-to-reach part of the screen for
+          one-handed use, and the dashed tile duplicates what a bottom "Join Circle"
+          button already does. Your own wireframes already solved this by anchoring
+          Join/New Circle to the bottom, so that's what this keeps. */}
+      <View style={{ flexDirection: "row", gap: 10, padding: 18, paddingTop: 12, backgroundColor: bg, borderTopWidth: 1, borderTopColor: border }}>
         <Pressable
-          style={{
-            flex: 1,
-            minHeight: 54,
-            borderRadius: 18,
-            backgroundColor: surface,
-            borderWidth: 1.2,
-            borderColor: border,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-          }}
+          onPress={onJoinCircle}
+          style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: surface, borderWidth: 1.5, borderColor: border, borderRadius: 14, paddingVertical: 13 }}
         >
-          <Search size={17} color={muted} />
-          <Text style={{ color: muted, fontSize: 14, fontWeight: "700" }}>
-            Find a Circle
-          </Text>
+          <Link2 size={16} color={text} />
+          <Text style={{ fontSize: 14, fontWeight: "700", color: text }}>Join Circle</Text>
         </Pressable>
         <Pressable
-          style={{
-            flex: 1,
-            minHeight: 54,
-            borderRadius: 18,
-            backgroundColor: "#A88AED",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            shadowColor: "#A88AED",
-            shadowOpacity: 0.28,
-            shadowRadius: 12,
-            shadowOffset: { width: 0, height: 4 },
-          }}
+          onPress={onNewCircle}
+          style={{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: "#A88AED", borderRadius: 14, paddingVertical: 13, shadowColor: "#A88AED", shadowOpacity: 0.4, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 4 }}
         >
-          <Plus size={17} color="#FAF8F0" />
-          <Text style={{ color: "#FAF8F0", fontSize: 14, fontWeight: "700" }}>
-            New Circle
-          </Text>
+          <Plus size={16} color="#FAF8F0" />
+          <Text style={{ fontSize: 14, fontWeight: "700", color: "#FAF8F0" }}>New Circle</Text>
         </Pressable>
       </View>
     </View>
   );
 }
 
-function CircleCard({
+function BentoCard({
   circle,
   darkMode,
-  text,
-  muted,
-  surface,
+  variant,
   onPress,
 }: {
-  circle: CircleItem;
+  circle: Circle;
   darkMode: boolean;
-  text: string;
-  muted: string;
-  surface: string;
-  border: string;
+  variant: "tall" | "normal" | "wide";
   onPress: () => void;
 }) {
+  const text = darkMode ? "#FAF8F0" : "#24221B";
+  const muted = darkMode ? "#B8B6AC" : "#605E55";
   const cardBg = darkMode ? circle.cardBg.dark : circle.cardBg.light;
-  const isFeatured = circle.size === "featured";
-  const isWide = circle.size === "wide";
+  const memberCount = circle.members.length + 1; // +1 for "You"
+  const wide = variant === "wide";
+  const tall = variant === "tall";
 
   return (
     <Pressable
@@ -162,241 +118,119 @@ function CircleCard({
       style={{
         backgroundColor: cardBg,
         borderRadius: 22,
+        padding: wide ? 18 : 16,
         borderWidth: 1,
-        borderColor: `${circle.accent}22`,
-        padding: isFeatured ? 16 : 14,
-        minHeight: isFeatured ? 240 : isWide ? 180 : 170,
-        marginBottom: 12,
+        borderColor: `${circle.accent}33`,
         overflow: "hidden",
+        minHeight: tall ? 292 : wide ? undefined : 140,
+        flexDirection: wide ? "row" : "column",
+        justifyContent: "space-between",
+        gap: wide ? 16 : 0,
       }}
     >
+      {/* Decorative accent circle */}
       <View
         style={{
           position: "absolute",
-          width: 110,
-          height: 110,
-          borderRadius: 55,
-          backgroundColor: `${circle.accent}14`,
+          width: 100,
+          height: 100,
+          borderRadius: 50,
+          backgroundColor: circle.accent,
+          opacity: 0.08,
+          bottom: wide ? undefined : -20,
           right: -20,
-          bottom: -20,
+          top: wide ? -20 : undefined,
         }}
       />
 
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: 12,
-            backgroundColor: `${circle.accent}25`,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Text style={{ fontSize: 18 }}>{circle.emoji}</Text>
-        </View>
-        <View
-          style={{
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            borderRadius: 999,
-            backgroundColor: `${circle.accent}16`,
-          }}
-        >
-          <Text
-            style={{ fontSize: 10, fontWeight: "700", color: circle.accent }}
-          >
-            {circle.lastActive}
-          </Text>
-        </View>
-      </View>
-
-      <View style={{ marginTop: 12 }}>
-        <Text
-          style={{
-            fontFamily: "Fredoka-SemiBold",
-            fontSize: isFeatured ? 20 : 17,
-            fontWeight: "700",
-            color: text,
-          }}
-        >
-          {circle.name}
-        </Text>
-        <Text style={{ fontSize: 12, color: muted, marginTop: 3 }}>
-          {circle.blurb}
-        </Text>
-      </View>
-
-      <View
-        style={{
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: 6,
-          marginTop: 10,
-        }}
-      >
-        {circle.tags.map((tag) => (
-          <View
-            key={tag}
-            style={{
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              borderRadius: 999,
-              backgroundColor: `${circle.accent}15`,
-            }}
-          >
-            <Text
-              style={{ fontSize: 10, fontWeight: "700", color: circle.accent }}
-            >
-              {tag}
-            </Text>
+      <View style={{ flex: 1, gap: wide ? 4 : 8 }}>
+        {/* Top row: emoji badge + last active */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: `${circle.accent}30`, alignItems: "center", justifyContent: "center" }}>
+            <Text style={{ fontSize: 18 }}>{circle.emoji}</Text>
           </View>
-        ))}
-      </View>
-
-      {circle.goal && (
-        <View style={{ marginTop: 12 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginBottom: 5,
-            }}
-          >
-            <Text style={{ fontSize: 11, color: muted }}>{circle.goal}</Text>
-            <Text
-              style={{ fontSize: 11, fontWeight: "700", color: circle.accent }}
-            >
-              {circle.goalPct}%
-            </Text>
-          </View>
-          <View
-            style={{
-              height: 5,
-              borderRadius: 999,
-              backgroundColor: `${circle.accent}22`,
-              overflow: "hidden",
-            }}
-          >
-            <View
-              style={{
-                height: "100%",
-                width: `${circle.goalPct}%`,
-                backgroundColor: circle.accent,
-                borderRadius: 999,
-              }}
-            />
+          <View style={{ backgroundColor: `${circle.accent}25`, borderRadius: 20, paddingVertical: 3, paddingHorizontal: 9 }}>
+            <Text style={{ fontSize: 10, fontWeight: "700", color: circle.accent }}>{circle.lastActive}</Text>
           </View>
         </View>
-      )}
 
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: 14,
-        }}
-      >
-        <AvatarStack
-          avatars={circle.avatars}
-          accent={circle.accent}
-          surface={surface}
-          total={circle.members}
-        />
-        <View
-          style={{
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 12,
-            backgroundColor: circle.accent,
-          }}
-        >
-          <Text style={{ color: "#FAF8F0", fontSize: 12, fontWeight: "700" }}>
-            View
+        {/* Name + member count */}
+        <View>
+          <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: tall ? 20 : wide ? 18 : 16, fontWeight: "600", color: text }}>
+            {circle.name}
           </Text>
+          <Text style={{ fontSize: 12, color: muted, marginTop: 2 }}>{memberCount} members</Text>
         </View>
+
+        {/* Tags */}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+          {circle.tags.map((tag) => (
+            <View key={tag} style={{ backgroundColor: `${circle.accent}22`, borderRadius: 20, paddingVertical: 3, paddingHorizontal: 10 }}>
+              <Text style={{ fontSize: 10, fontWeight: "700", color: circle.accent }}>{tag}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Goal progress — tall and wide cards only, matches FigmaMake */}
+        {circle.goal && (tall || wide) && (
+          <View style={{ marginTop: tall ? "auto" : 4 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 5 }}>
+              <Text style={{ fontSize: 11, color: muted, flex: 1, marginRight: 8 }} numberOfLines={1}>🎯 {circle.goal}</Text>
+              <Text style={{ fontSize: 11, fontWeight: "700", color: circle.accent }}>{circle.goalPct}%</Text>
+            </View>
+            <View style={{ height: 5, backgroundColor: `${circle.accent}22`, borderRadius: 3, overflow: "hidden" }}>
+              <View style={{ height: "100%", width: `${circle.goalPct}%`, backgroundColor: circle.accent, borderRadius: 3 }} />
+            </View>
+          </View>
+        )}
       </View>
 
-      {circle.live && (
-        <View
-          style={{
-            marginTop: 10,
-            alignSelf: "flex-start",
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            borderRadius: 999,
-            backgroundColor: "rgba(166, 194, 97, 0.2)",
-          }}
+      {/* Avatars + View button */}
+      <View
+        style={
+          wide
+            ? { alignItems: "flex-end", justifyContent: "space-between", gap: 12 }
+            : { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: tall ? 12 : "auto", paddingTop: tall ? 0 : 10 }
+        }
+      >
+        <AvatarStack members={circle.members} accent={circle.accent} surface={cardBg} total={memberCount} />
+        <Pressable
+          onPress={onPress}
+          style={{ backgroundColor: circle.accent, borderRadius: wide ? 12 : 10, paddingVertical: wide ? 8 : 6, paddingHorizontal: wide ? 16 : 13 }}
         >
-          <Text style={{ fontSize: 10, fontWeight: "700", color: "#6D8F2D" }}>
-            Live now
-          </Text>
-        </View>
-      )}
+          <Text style={{ fontSize: wide ? 12 : 11, fontWeight: "700", color: "#FAF8F0" }}>View →</Text>
+        </Pressable>
+      </View>
     </Pressable>
   );
 }
 
-function AvatarStack({
-  avatars,
-  accent,
-  surface,
-  total,
-}: {
-  avatars: string[];
-  accent: string;
-  surface: string;
-  total: number;
-}) {
-  const show = avatars.slice(0, 4);
+function AvatarStack({ members, accent, surface, total }: { members: CircleMember[]; accent: string; surface: string; total: number }) {
+  const show = members.slice(0, 3);
   const extra = total - show.length;
-
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
-      {show.map((avatar, index) => (
+      {show.map((m, i) => (
         <View
-          key={`${avatar}-${index}`}
+          key={m.userId}
           style={{
             width: 26,
             height: 26,
             borderRadius: 13,
-            backgroundColor: avatarColors[index % avatarColors.length],
+            backgroundColor: AVATAR_COLORS[i % AVATAR_COLORS.length],
             borderWidth: 2,
             borderColor: surface,
-            marginLeft: index > 0 ? -8 : 0,
+            marginLeft: i > 0 ? -8 : 0,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Text style={{ fontSize: 10, fontWeight: "700", color: "#FAF8F0" }}>
-            {avatar}
-          </Text>
+          <Text style={{ fontSize: 10, fontWeight: "700", color: "#FAF8F0" }}>{m.name[0]}</Text>
         </View>
       ))}
       {extra > 0 && (
-        <View
-          style={{
-            width: 26,
-            height: 26,
-            borderRadius: 13,
-            backgroundColor: `${accent}22`,
-            borderWidth: 2,
-            borderColor: surface,
-            marginLeft: -8,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Text style={{ fontSize: 9, fontWeight: "700", color: accent }}>
-            +{extra}
-          </Text>
+        <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: `${accent}30`, borderWidth: 2, borderColor: surface, marginLeft: -8, alignItems: "center", justifyContent: "center" }}>
+          <Text style={{ fontSize: 9, fontWeight: "700", color: accent }}>+{extra}</Text>
         </View>
       )}
     </View>
