@@ -1,0 +1,62 @@
+/* ==========================================================================
+   1. COLOR TOKENS & DESIGN SYSTEM VARIABLES
+   ========================================================================== */
+:root {
+  /* Canvas & Base Tokens */
+  --gng-bg: #F4F0DD;
+  --gng-surface: #FAF8F0;
+  --gng-surface-raised: #FFFFFF;
+  --gng-text: #24221B;
+  --gng-text-muted: #605E55;
+  --gng-border: rgba(36, 34, 27, 0.10);
+
+  /* Primary Brand (Indigo) */
+  --gng-primary: #A88AED;
+  --gng-primary-shade: #352C53;
+  --gng-primary-deep-shade: #64539E;
+  --gng-primary-tint: #CBB9F4;
+  --gng-primary-tint2: #ECE4FC;
+
+  /* Accent Brand (Celery/Green) */
+  --gng-accent: #A6C261;
+  --gng-accent-shade: #6D843D;
+  --gng-accent-deep-shade: #36421B;
+  --gng-accent-tint: #C5D993;
+  --gng-accent-tint2: #E9F2D3;
+
+  /* Typography Families */
+  --font-heading: 'ADayWithoutSun';
+  --font-body: Arial;
+}
+
+/* Dark Mode Overrides */
+.dark,
+[data-theme='dark'] {
+  --gng-bg: #1A1A1A;
+  --gng-surface: #24221B;
+  --gng-surface-raised: #2D2B22;
+  --gng-text: #FAF8F0;
+  --gng-text-muted: #B8B6AC;
+  --gng-border: rgba(250, 248, 240, 0.12);
+
+  --gng-primary-shade: #ECE4FC;
+  --gng-primary-deep-shade: #CBB9F4;
+  --gng-primary-tint: #64539E;
+  --gng-primary-tint2: #352C53;
+
+  --gng-accent-shade: #C5D993;
+  --gng-accent-deep-shade: #E9F2D3;
+  --gng-accent-tint: #6D843D;
+  --gng-accent-tint2: #36421B;
+}
+
+/* ==========================================================================
+   2. TYPOGRAPHY UTILITIES
+   ========================================================================== */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}

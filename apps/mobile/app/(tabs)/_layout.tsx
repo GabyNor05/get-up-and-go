@@ -132,7 +132,7 @@ export default function TabLayout({darkMode}: Props) {
         }}
       />
       <Tabs.Screen
-        name="(circles)/index"
+        name="(circles)"
         options={{
           title: 'My Circles',
           tabBarIcon: buildTabIcon(UserRound, 'Circles', false),

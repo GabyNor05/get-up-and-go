@@ -1,5 +1,13 @@
+import { Header } from "@/components/textFormating";
 import { useEffect, useRef, useState } from "react";
-import { View, Text, Pressable, Image, ScrollView, Animated } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  ScrollView,
+  Animated,
+} from "react-native";
 import Svg, { Circle, G } from "react-native-svg";
 
 interface Props {
@@ -91,55 +99,23 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
   const muted = "#605E55";
   const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
 
-  function todayDate(){
+  function todayDate() {
     const today = new Date();
-    const options: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'long', day: 'numeric' };
-    return today.toLocaleDateString('en-US', options);
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    };
+    return today.toLocaleDateString("en-US", options);
   }
 
   return (
     <View style={{ flex: 1, backgroundColor: bg }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 }}>
-          <View>
-            <Text style={{ fontFamily: "'Amatic SC', sans-serif", fontSize: 26, fontWeight: "600", color: text, lineHeight: 28.6 }}>
-              Welcome back!
-            </Text>
-            <Text style={{ fontSize: 13, color: muted, marginTop: 2 }}>{todayDate()}</Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <Pressable
-              onPress={toggleDark}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: border,
-                backgroundColor: surface,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text style={{ fontSize: 16 }}>{darkMode ? "☀️" : "🌙"}</Text>
-            </Pressable>
-            <View
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 14,
-                backgroundColor: "#A88AED",
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 2,
-                borderColor: "rgba(168,138,237,0.3)",
-              }}
-            >
-              <Text style={{ fontFamily: "Fredoka-SemiBold, sans-serif", fontSize: 18, fontWeight: "600", color: "#FAF8F0" }}>J</Text>
-            </View>
-          </View>
-        </View>
+        
+          <Header pageHeader="Welcome back!" subHeading={todayDate()} />
+        
 
         <View style={{ paddingHorizontal: 24, paddingVertical: 8, gap: 20 }}>
           {/* Hero goal card */}
@@ -163,7 +139,14 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
             {/* Ring */}
             <View style={{ width: 88, height: 88 }}>
               <Svg width={88} height={88} viewBox="0 0 88 88">
-                <Circle cx={44} cy={44} r={RING_RADIUS} fill="none" stroke={border} strokeWidth={8} />
+                <Circle
+                  cx={44}
+                  cy={44}
+                  r={RING_RADIUS}
+                  fill="none"
+                  stroke={border}
+                  strokeWidth={8}
+                />
                 <G rotation={-90} origin="44,44">
                   <AnimatedCircle
                     cx={44}
@@ -178,15 +161,54 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
                   />
                 </G>
               </Svg>
-              <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, alignItems: "center", justifyContent: "center" }}>
-                <Text style={{ fontFamily: "Fredoka-SemiBold, sans-serif", fontSize: 22, fontWeight: "600", color: "#A6C261" }}>{goalProgress}%</Text>
-                <Text style={{ fontSize: 10, color: muted, marginTop: 2 }}>done</Text>
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Fredoka-SemiBold, sans-serif",
+                    fontSize: 22,
+                    fontWeight: "600",
+                    color: "#A6C261",
+                  }}
+                >
+                  {goalProgress}%
+                </Text>
+                <Text style={{ fontSize: 10, color: muted, marginTop: 2 }}>
+                  done
+                </Text>
               </View>
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: "Fredoka-SemiBold, sans-serif", fontSize: 20, fontWeight: "600", color: text }}>Daily Goal</Text>
-              <Text style={{ fontSize: 13, color: muted, marginTop: 4, lineHeight: 19.5 }}>6,800 / 10,000 steps today</Text>
+              <Text
+                style={{
+                  fontFamily: "Fredoka-SemiBold, sans-serif",
+                  fontSize: 20,
+                  fontWeight: "600",
+                  color: text,
+                }}
+              >
+                Daily Goal
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: muted,
+                  marginTop: 4,
+                  lineHeight: 19.5,
+                }}
+              >
+                6,800 / 10,000 steps today
+              </Text>
               <View
                 style={{
                   marginTop: 10,
@@ -201,42 +223,80 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
                 }}
               >
                 <Text style={{ fontSize: 14 }}>🔥</Text>
-                <Text style={{ fontSize: 12, fontWeight: "600", color: "#A6C261" }}>3-day streak</Text>
+                <Text
+                  style={{ fontSize: 12, fontWeight: "600", color: "#A6C261" }}
+                >
+                  3-day streak
+                </Text>
               </View>
             </View>
           </View>
 
-                {/* What's been happening */}
-                <View>
-                  <Text style={{ fontFamily: "Fredoka-SemiBold, sans-serif", fontSize: 18, fontWeight: "600", color: text, marginBottom: 12 }}>
-                    What's been happening
-                  </Text>
-                  <View style={{ backgroundColor: surface, borderRadius: 20, borderWidth: 1, borderColor: border, overflow: "hidden" }}>
-                    {notifications.map((n, i) => (
-                      <View
-                        key={i}
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          paddingVertical: 14,
-                          paddingHorizontal: 18,
-                          borderBottomWidth: i < notifications.length - 1 ? 1 : 0,
-                          borderBottomColor: border,
-                        }}
+          {/* What's been happening */}
+          <View>
+            <Text
+              style={{
+                fontFamily: "Fredoka-SemiBold, sans-serif",
+                fontSize: 18,
+                fontWeight: "600",
+                color: text,
+                marginBottom: 12,
+              }}
+            >
+              What's been happening
+            </Text>
+            <View
+              style={{
+                backgroundColor: surface,
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: border,
+                overflow: "hidden",
+              }}
+            >
+              {notifications.map((n, i) => (
+                <View
+                  key={i}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingVertical: 14,
+                    paddingHorizontal: 18,
+                    borderBottomWidth: i < notifications.length - 1 ? 1 : 0,
+                    borderBottomColor: border,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 14,
+                    }}
+                  >
+                    <Text style={{ fontSize: 18 }}>{n.icon}</Text>
+                    <View>
+                      <Text
+                        style={{ fontSize: 14, fontWeight: "500", color: text }}
                       >
-                        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-                          <Text style={{ fontSize: 18 }}>{n.icon}</Text>
-                          <View>
-                            <Text style={{ fontSize: 14, fontWeight: "500", color: text }}>{n.label}</Text>
-                            <Text style={{ fontSize: 12, color: muted, marginTop: 1 }}>{n.sublabel}</Text>
-                          </View>
-                        </View>
-                        <Text style={{ color: "#A88AED", fontSize: 16, opacity: 0.7 }}>›</Text>
-                      </View>
-                    ))}
+                        {n.label}
+                      </Text>
+                      <Text
+                        style={{ fontSize: 12, color: muted, marginTop: 1 }}
+                      >
+                        {n.sublabel}
+                      </Text>
+                    </View>
                   </View>
+                  <Text
+                    style={{ color: "#A88AED", fontSize: 16, opacity: 0.7 }}
+                  >
+                    ›
+                  </Text>
                 </View>
+              ))}
+            </View>
+          </View>
           {/* Quick actions */}
           <View style={{ flexDirection: "row", gap: 12 }}>
             {[
@@ -260,28 +320,61 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
                 }}
               >
                 <Text style={{ fontSize: 16 }}>{emoji}</Text>
-                <Text style={{ fontSize: 13, fontWeight: "600", color }}>{label}</Text>
+                <Text style={{ fontSize: 13, fontWeight: "600", color }}>
+                  {label}
+                </Text>
               </Pressable>
             ))}
           </View>
 
-
           {/* Recommended activities */}
           <View>
-            <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginBottom: 14 }}>
-              <Text style={{ fontFamily: "Fredoka-SemiBold, sans-serif", fontSize: 18, fontWeight: "600", color: text }}>Recommended</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                marginBottom: 14,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Fredoka-SemiBold, sans-serif",
+                  fontSize: 18,
+                  fontWeight: "600",
+                  color: text,
+                }}
+              >
+                Recommended
+              </Text>
               <Pressable>
-                <Text style={{ color: "#A88AED", fontSize: 13, fontWeight: "600" }}>See all →</Text>
+                <Text
+                  style={{ color: "#A88AED", fontSize: 13, fontWeight: "600" }}
+                >
+                  See all →
+                </Text>
               </Pressable>
             </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 14, paddingLeft: 24, paddingRight: 24 }}
+              contentContainerStyle={{
+                gap: 14,
+                paddingLeft: 24,
+                paddingRight: 24,
+              }}
               style={{ marginHorizontal: -24 }}
             >
               {activities.map((act) => (
-                <ActivityCard key={act.id} activity={act} darkMode={darkMode} surface={surface} border={border} text={text} muted={muted} />
+                <ActivityCard
+                  key={act.id}
+                  activity={act}
+                  darkMode={darkMode}
+                  surface={surface}
+                  border={border}
+                  text={text}
+                  muted={muted}
+                />
               ))}
             </ScrollView>
           </View>
@@ -326,7 +419,11 @@ function ActivityCard({
       }}
     >
       <View style={{ height: 120, backgroundColor: "#ddd" }}>
-        <Image source={{ uri: activity.img }} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+        <Image
+          source={{ uri: activity.img }}
+          style={{ width: "100%", height: "100%" }}
+          resizeMode="cover"
+        />
         <View
           style={{
             position: "absolute",
@@ -338,7 +435,9 @@ function ActivityCard({
             paddingHorizontal: 10,
           }}
         >
-          <Text style={{ fontSize: 11, fontWeight: "700", color: "#FAF8F0" }}>{activity.category}</Text>
+          <Text style={{ fontSize: 11, fontWeight: "700", color: "#FAF8F0" }}>
+            {activity.category}
+          </Text>
         </View>
         <View
           style={{
@@ -354,13 +453,33 @@ function ActivityCard({
             gap: 4,
           }}
         >
-          <Text style={{ fontSize: 10, color: "#FAF8F0" }}>⭐ {activity.rating}</Text>
+          <Text style={{ fontSize: 10, color: "#FAF8F0" }}>
+            ⭐ {activity.rating}
+          </Text>
         </View>
       </View>
       <View style={{ paddingVertical: 12, paddingHorizontal: 14 }}>
-        <Text style={{ fontSize: 14, fontWeight: "600", color: text, lineHeight: 18.2 }}>{activity.title}</Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
-          <Text style={{ fontSize: 12, color: muted }}>📍 {activity.distance} away</Text>
+        <Text
+          style={{
+            fontSize: 14,
+            fontWeight: "600",
+            color: text,
+            lineHeight: 18.2,
+          }}
+        >
+          {activity.title}
+        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
+            marginTop: 6,
+          }}
+        >
+          <Text style={{ fontSize: 12, color: muted }}>
+            📍 {activity.distance} away
+          </Text>
         </View>
       </View>
     </View>
