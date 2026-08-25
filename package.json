@@ -19,6 +19,9 @@
   },
   "homepage": "https://github.com/GabyNor05/get-up-and-go#readme",
   "dependencies": {
+    "@cloudinary/url-gen": "^1.22.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "dotenv": "^17.4.2",
     "firebase": "^12.17.1"
   },
   "workspaces": [

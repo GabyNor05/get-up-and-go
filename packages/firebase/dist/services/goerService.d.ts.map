@@ -1,0 +1,1 @@
+{"version":3,"file":"goerService.d.ts","sourceRoot":"","sources":["../../src/services/goerService.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,IAAI,EAAE,aAAa,EAAE,MAAM,oBAAoB,CAAC;AAIzD,eAAO,MAAM,WAAW;IACtB;;OAEG;qBACoB,aAAa,GAAG,OAAO,CAAC,IAAI,CAAC;IAUpD;;OAEG;qBACoB,MAAM,GAAG,OAAO,CAAC,IAAI,GAAG,IAAI,CAAC;IAQpD;;OAEG;sBACqB,MAAM,kBAAkB,MAAM,GAAG,OAAO,CAAC,IAAI,CAAC;CAMvE,CAAC"}
