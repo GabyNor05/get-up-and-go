@@ -116,7 +116,14 @@ For Mobile Development:
   ```bash
     cd apps/web && npm start
    ```
-  
+
+---
+## 📽️ Mockups & Demo video
+
+
+
+
+[Demo Video](https://youtu.be/gdJVw8wriyY)
 ---
 ## 👏 Proud Moments
 
@@ -151,6 +158,13 @@ Navigating the nuances of native styling, state scoping inside nested drawers/mo
 Beyond establishing a robust foundation for dynamic circles, gamified progress tracking, and event discovery, the architecture is purposefully crafted for long-term scalability. Whether expanding the partner ecosystem for local event organisers or introducing deeper algorithmic discovery, Get Up & Go stands as a fully realised, production-ready framework designed to inspire people to break out of their routines and **get moving together**.
 
 ---
+## ✨ Acknowledgements
+
+**Caylin Oosthuizen** commissioned for the making of the G&G logo.
+**Tsungai Katsuro** semester 2 lecturer, who guided us through this brief.
+**William Basson** semester 1 lecturer, who provided much needed feedback and guidence for the project.
+
+---
 
 🔒 License
-Distributed under the MIT License. See LICENSE for more information.
+Distributed under the MIT License. See `LICENSE` for more information.
