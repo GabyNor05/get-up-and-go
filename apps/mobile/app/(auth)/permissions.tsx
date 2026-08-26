@@ -4,7 +4,6 @@ import { Camera, MapPin, Bell, ShieldLock, Info } from "lucide-react-native";
 import { router } from "expo-router";
 import * as Location from "expo-location";
 import { Camera as ExpoCamera } from "expo-camera";
-import * as Notifications from "expo-notifications";
 import { auth } from "../../../../packages/firebase/src/config/firebase"; // Adjust path to your auth config
 import { goerService } from "../../../../packages/firebase/src/services/goerService"; // Adjust path to your goerService
 
@@ -45,14 +44,6 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
     }
   };
 
-  const toggleNotifications = async () => {
-    if (!notifOn) {
-      const { status } = await Notifications.requestPermissionsAsync();
-      setNotifOn(status === "granted");
-    } else {
-      setNotifOn(false);
-    }
-  };
 
   const handleContinue = async () => {
     try {

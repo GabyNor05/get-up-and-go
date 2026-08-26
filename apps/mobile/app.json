@@ -32,30 +32,7 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
-        {
-          "image": "./assets/splash/splashShorter.png",
-          "imageWidth": 213,
-          "resizeMode": "contain",
-          "backgroundColor": "#FAF8F0",
-          "dark": {
-            "backgroundColor": "#000000"
-          },
-          "android": {
-            "image": "./assets/splash/splashShorter.png",
-            "backgroundColor": "#FAF8F0",
-            "dark": {
-              "backgroundColor": "#000000"
-            }
-          },
-          "ios": {
-            "image": "./assets/splash/splashShorter.png",
-            "backgroundColor": "#FAF8F0",
-            "dark": {
-              "backgroundColor": "#000000"
-            }
-          }
-        }
+        
       ]
     ],
     "experiments": {

@@ -1,185 +1,123 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  TextInput,
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-} from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, View, Text, Image } from "react-native";
 import { useRouter } from "expo-router";
-// Adjust relative path to your authService as needed
-import { authService } from "@get-up-and-go/firebase/src/services/authService";
+import { useColorScheme } from "react-native";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../../packages/firebase/src/config/firebase";
 
-const COLORS = {
-  bg: "#F4F0DD",
-  surface: "#FAF8F0",
-  text: "#24221B",
-  muted: "#605E55",
-  border: "rgba(36,34,27,0.12)",
-  inputBg: "#FFFFFF",
-  primary: "#A88AED",
-  titleText: "#352C53",
-  buttonBg: "#64539E",
-};
+// Local asset or custom logo path
+import AppLogo from "../../../packages/shared-ui/assets/logos/transparentBgLogo.png"; 
 
-const LoginScreen = () => {
+const MIN_SPLASH_DURATION = 2000; // Minimum time logo is visible (ms)
+const EXIT_DURATION = 240;        // Fade out duration (ms)
+
+export default function IndexRedirectScreen() {
   const router = useRouter();
+  const scheme = useColorScheme() ?? "light";
+  const isDarkMode = scheme === "dark";
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert("Error", "Please enter both email and password.");
-      return;
-    }
+  // Animation Refs
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(0.3)).current;
+  const screenOpacity = useRef(new Animated.Value(1)).current;
 
-    setLoading(true);
-    try {
-      await authService.login(email.trim(), password);
-      // Navigate to main tab view on success
-      router.replace("./(tabs)");
-    } catch (error: any) {
-      const errorMessage = error?.message || "Invalid email or password.";
-      Alert.alert("Login Failed", errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 1. Entrance animation & Auth listener
+  useEffect(() => {
+    // Play logo entrance animation
+    Animated.parallel([
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.spring(logoScale, {
+        toValue: 1,
+        friction: 7,
+        tension: 45,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
-  const handleSignUp = () => {
-    router.push("/signup");
-  };
+    // Listen for Firebase Auth state
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsLoggedIn(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // 2. Handle exit transition after auth resolves
+  useEffect(() => {
+    // Wait until auth state is determined
+    if (isLoggedIn === null) return;
+
+    const timer = setTimeout(() => {
+      // Fade out screen
+      Animated.timing(screenOpacity, {
+        toValue: 0,
+        duration: EXIT_DURATION,
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) {
+          // Replace stack with target route
+          router.replace(isLoggedIn ? "/(tabs)/(home)" : "/(auth)");
+        }
+      });
+    }, MIN_SPLASH_DURATION);
+
+    return () => clearTimeout(timer);
+  }, [isLoggedIn, router, screenOpacity]);
+
+  // Color theme definitions matching your app
+  const bgSurface =  "#FAF8F0";
+  const textColor =  "#24221B";
+  const subtitleColor = "#605E55";
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-
-      <View style={styles.formContainer}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            placeholder="Enter your email"
-            style={styles.input}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            value={email}
-            onChangeText={setEmail}
-            enterKeyHint="next"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            placeholder="Enter your password"
-            style={styles.input}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            enterKeyHint="done"
-            onSubmitEditing={handleLogin}
-          />
-        </View>
-
-        <Pressable
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}
+    <Animated.View style={{ flex: 1, opacity: screenOpacity, backgroundColor: bgSurface }}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24 }}>
+        {/* Animated Logo Container */}
+        <Animated.View
+          style={{
+            opacity: logoOpacity,
+            transform: [{ scale: logoScale }],
+          }}
         >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.buttonText}>Login</Text>
-          )}
-        </Pressable>
-      </View>
+          <Image
+            source={AppLogo}
+            resizeMode="contain"
+            style={{ width: 140, height: 140 }}
+          />
+        </Animated.View>
 
-      <View style={styles.footerContainer}>
-        <Text style={styles.footerText}>Don&apos;t have an account? </Text>
-        <Pressable onPress={handleSignUp}>
-          <Text style={styles.signUpText}>Sign Up</Text>
-        </Pressable>
+        {/* Title / Tagline */}
+        <Animated.View style={{ opacity: logoOpacity, alignItems: "center", marginTop: 24 }}>
+          <Text
+           className="font-heading"
+            style={{
+              fontSize: 28,
+              fontWeight: "700",
+              color: textColor,
+              marginBottom: 6,
+            }}
+          >
+            Get up & Go
+          </Text>
+          <Text
+            style={{
+              fontSize: 11,
+              fontWeight: "600",
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              color: subtitleColor,
+            }}
+          >
+            Discover what’s right around you.
+          </Text>
+        </Animated.View>
       </View>
-    </View>
+    </Animated.View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 16,
-    height: "100%",
-    width: "100%",
-    backgroundColor: COLORS.surface,
-  },
-  title: {
-    color: COLORS.titleText,
-    fontSize: 42,
-    fontWeight: "600",
-    textAlign: "center",
-    marginBottom: 28,
-  },
-  formContainer: {
-    flexDirection: "column",
-    gap: 16,
-  },
-  inputGroup: {
-    flexDirection: "column",
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    color: COLORS.text,
-  },
-  input: {
-    width: "100%",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#D1D5DB", // equivalent to border-gray-300
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    height: 44, // Increased slightly from 36px for cleaner touch area
-    backgroundColor: COLORS.inputBg,
-  },
-  button: {
-    width: "100%",
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: COLORS.buttonBg,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 32,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  footerContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 4,
-  },
-  footerText: {
-    fontSize: 14,
-    color: COLORS.muted,
-  },
-  signUpText: {
-    fontSize: 14,
-    color: COLORS.primary,
-    fontWeight: "600",
-  },
-});
-
-export default LoginScreen;
+}

@@ -10,11 +10,14 @@ import {
   Share,
   Alert,
   ActivityIndicator,
+  Linking,
   NativeSyntheticEvent,
   NativeTouchEvent,
 } from "react-native";
+import { Image } from "expo-image";
 import { Share2, MapPin, Clock, ThumbsUp, QrCode, Image as ImageIcon, Check } from "lucide-react-native";
 import { happeningService } from "../../../../packages/firebase/src/services/happeningService";
+import { userService } from "../../../../packages/firebase/src/services/userService";
 import { Happening } from "../../../../packages/firebase/src/types/happening";
 
 interface Props {
@@ -45,8 +48,11 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
       Animated.spring(translateY, { toValue: 0, useNativeDriver: true, bounciness: 4, speed: 14 }).start();
 
       setLoading(true);
+      userService.getUser
+      ;
+      // FIXED: Using getById instead of getHappeningById
       happeningService
-        .getHappeningById(eventId)
+        .getById(eventId)
         .then((fetched) => setEvent(fetched))
         .catch((err) => console.error("Error fetching detail:", err))
         .finally(() => setLoading(false));
@@ -89,7 +95,13 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
 
   const handleShare = () => {
     if (!event) return;
-    Share.share({ message: `${event.title} — ${event.location?.address || ""}` }).catch(() => {});
+    Share.share({ message: `Join the fun at ${event.title} — ${event.locationName || ""} \n\n ${event.google_maps_link}` }).catch(() => {});
+  };
+
+  const handleOpenMap = () => {
+    if (event?.google_maps_link) {
+      Linking.openURL(event.google_maps_link).catch(() => {});
+    }
   };
 
   const handleScanQr = () => {
@@ -103,6 +115,16 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
   const muted = "#605E55";
   const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
   const placeholderBg = darkMode ? "#3a382c" : "#dcdcdc";
+
+  // Safely format Timestamp or Date
+  const formattedDate = event?.dateTime?.toDate
+    ? event.dateTime.toDate().toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "";
 
   return (
     <Modal transparent visible={mounted} animationType="none" onRequestClose={handleClose}>
@@ -145,48 +167,101 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
             </View>
           ) : (
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
+              {/* Thumbnail Header */}
               <View style={{ paddingHorizontal: 24, paddingTop: 4 }}>
-                <View style={{ height: 190, borderRadius: 20, backgroundColor: placeholderBg, alignItems: "center", justifyContent: "center" }}>
-                  <ImageIcon size={40} color={muted} />
+                <View
+                  style={{
+                    height: 190,
+                    borderRadius: 20,
+                    backgroundColor: placeholderBg,
+                    overflow: "hidden",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {event.thumbnail_url ? (
+                    <Image
+                      source={{ uri: event.thumbnail_url }}
+                      style={{ width: "100%", height: "100%" }}
+                      contentFit="cover"
+                      transition={200}
+                    />
+                  ) : (
+                    <ImageIcon size={40} color={muted} />
+                  )}
                 </View>
               </View>
 
-              <View style={{ paddingHorizontal: 24, paddingTop: 18, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: 22, fontWeight: "700", color: text, flex: 1, marginRight: 12 }}>
+              {/* Title & Share */}
+              <View
+                style={{
+                  paddingHorizontal: 24,
+                  paddingTop: 18,
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Fredoka-SemiBold",
+                    fontSize: 22,
+                    fontWeight: "700",
+                    color: text,
+                    flex: 1,
+                    marginRight: 12,
+                  }}
+                >
                   {event.title}
                 </Text>
                 <Pressable
                   onPress={handleShare}
-                  style={{ flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: border, borderRadius: 12, paddingVertical: 8, paddingHorizontal: 14 }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                    backgroundColor: border,
+                    borderRadius: 12,
+                    paddingVertical: 8,
+                    paddingHorizontal: 14,
+                  }}
                 >
                   <Share2 size={14} color={text} />
                   <Text style={{ fontSize: 13, fontWeight: "700", color: text }}>Share</Text>
                 </Pressable>
               </View>
 
+              {/* Location & Time */}
               <View style={{ paddingHorizontal: 24, paddingTop: 12, gap: 8 }}>
-                {event.location?.address && (
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                {event.locationName && (
+                  <Pressable onPress={handleOpenMap} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                     <MapPin size={14} color="#A88AED" />
-                    <Text style={{ fontSize: 13, color: "#A88AED", fontWeight: "600", textDecorationLine: "underline" }}>
-                      {event.location.address}
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        color: "#A88AED",
+                        fontWeight: "600",
+                        textDecorationLine: event.google_maps_link ? "underline" : "none",
+                      }}
+                    >
+                      {event.locationName}
                     </Text>
-                  </View>
+                  </Pressable>
                 )}
-                {event.dateTime && (
+                {formattedDate !== "" && (
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                     <Clock size={14} color={muted} />
-                    <Text style={{ fontSize: 13, color: muted }}>
-                      {new Date(event.dateTime.toMillis ? event.dateTime.toMillis() : (event.dateTime as any)).toLocaleString()}
-                    </Text>
+                    <Text style={{ fontSize: 13, color: muted }}>{formattedDate}</Text>
                   </View>
                 )}
               </View>
 
+              {/* Description */}
               <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
                 <Text style={{ fontSize: 14, color: text, lineHeight: 22 }}>{event.description}</Text>
               </View>
 
+              {/* Action Buttons */}
               <View style={{ paddingHorizontal: 24, paddingTop: 22, flexDirection: "row", gap: 12 }}>
                 <Pressable
                   onPress={() => setGoing((v) => !v)}
@@ -202,7 +277,9 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
                   }}
                 >
                   {going ? <Check size={16} color="#FAF8F0" /> : <ThumbsUp size={16} color="#FAF8F0" />}
-                  <Text style={{ color: "#FAF8F0", fontSize: 14, fontWeight: "700" }}>{going ? "Going" : "RSVP Yes"}</Text>
+                  <Text style={{ color: "#FAF8F0", fontSize: 14, fontWeight: "700" }}>
+                    {going ? "Going" : "RSVP Yes"}
+                  </Text>
                 </Pressable>
                 <Pressable
                   onPress={handleScanQr}

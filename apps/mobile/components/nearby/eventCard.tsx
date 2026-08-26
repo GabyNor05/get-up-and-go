@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Bookmark, MapPin, Clock, Image as ImageIcon } from "lucide-react-native";
 import { Image } from "expo-image";
-import type { Happening, HappeningCategory } from "../../../../packages/firebase/src/types/happening";
+import type { Happening } from "../../../../packages/firebase/src/types/happening";
 
 // Palette exact match to CirclesScreen
 const CATEGORY_COLORS: Record<
@@ -32,14 +32,13 @@ export default function EventCard({
   isSaved,
   onToggleSave,
   onPress,
-  width = 220,
+  width = 180, // Received dynamic width
 }: Props) {
-  // Safe key extraction
   const catKey = event.category ? String(event.category).toUpperCase() : "ALL";
   const theme = CATEGORY_COLORS[catKey] ?? CATEGORY_COLORS.ALL;
 
   const accentColor = theme.accent;
-  // Dynamic tinted card surface background
+  // Use tinted card surface for background (or set accentColor if full solid accent is desired)
   const cardBg = darkMode ? theme.cardBg.dark : theme.cardBg.light;
   
   const textColor = darkMode ? "#FAF8F0" : "#24221B";
@@ -62,13 +61,14 @@ export default function EventCard({
         styles.card,
         {
           width,
-          backgroundColor: accentColor,
+          backgroundColor: cardBg, // Tinted surface background
           borderColor: borderColor,
           transform: [{ scale: pressed ? 0.98 : 1 }],
+          overflow: "hidden"
         },
       ]}
     >
-      {/* Decorative background accent circle (Identical to BentoCard) */}
+      {/* Decorative background accent circle */}
       <View
         style={{
           position: "absolute",
@@ -76,7 +76,7 @@ export default function EventCard({
           height: 100,
           borderRadius: 50,
           backgroundColor: accentColor,
-          opacity: 0.1,
+          opacity: 0.15,
           bottom: -20,
           right: -20,
         }}
@@ -107,7 +107,6 @@ export default function EventCard({
         {/* Save Bookmark */}
         <Pressable
           onPress={onToggleSave}
-          hitSlop={8}
           style={styles.bookmarkButton}
         >
           <Bookmark size={13} color="#24221B" fill={isSaved ? "#24221B" : "none"} />
@@ -165,9 +164,12 @@ export default function EventCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 22, // Rounded border radius applied directly
+    width: 180,         // Default target width
+    minWidth: 100,      // Never shrinks below 100
+    maxWidth: 200,      // Never grows past 200
+    borderRadius: 22,
     borderWidth: 1.5,
-    overflow: "hidden", // Ensures image & background clip properly
+    overflow: "hidden", // Required in RN to prevent transparent background bleed
     marginRight: 12,
     elevation: 2,
     shadowColor: "#000",
@@ -179,6 +181,7 @@ const styles = StyleSheet.create({
     height: 110,
     width: "100%",
     alignItems: "center",
+    justifyContent: "center",
     position: "relative",
     backgroundColor: "rgba(0,0,0,0.04)",
   },
@@ -209,6 +212,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: "rgba(255,255,255,0.9)",
     alignItems: "center",
+    justifyContent: "center",
   },
   content: {
     padding: 12,
