@@ -115,7 +115,7 @@ export default function TabLayout({darkMode}: Props) {
         name="(achievements)/index"
         options={{
           title: 'Achievements',
-          tabBarIcon: buildTabIcon(Award, 'Badges', false),
+          tabBarIcon: buildTabIcon(Award, 'Go-Points', false),
         }}
       />
       <Tabs.Screen

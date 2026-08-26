@@ -54,6 +54,10 @@ const LoginScreen = () => {
     router.push("/signup");
   };
 
+  const handleDevMode =() =>{
+    router.push("/DevHappeningScreen");
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
@@ -103,6 +107,11 @@ const LoginScreen = () => {
         <Text style={styles.footerText}>Don&apos;t have an account? </Text>
         <Pressable onPress={handleSignUp}>
           <Text style={styles.signUpText}>Sign Up</Text>
+        </Pressable>
+      </View>
+      <View className="bg-slate-500 w-fit px-4 py-2 rounded-md">
+        <Pressable onPress={handleDevMode}>
+          <Text className="text-white font-medium">Open Dev Mode</Text>
         </Pressable>
       </View>
     </View>
