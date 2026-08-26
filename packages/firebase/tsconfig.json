@@ -13,7 +13,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "types": ["react-native"],
+    "types": ["react-native", "node"],
     "rootDir": "./src"
   },
   "include": ["src/**/*"],
