@@ -7,7 +7,7 @@ import {
   arrayRemove 
 } from "firebase/firestore";
 import { db } from "../config/firebase";
-import { Goer, CreateGoerData } from "../types/goer";
+import { Goer, CreateGoerData, GoerPermissions } from "../types/goer";
 
 const GOERS_COLLECTION = "goers";
 
@@ -31,14 +31,17 @@ export const goerService = {
         font_size: 14,
         font: "System",
         units: "metric",
-        push_notifications: true,
-        trend_notifications: true,
+        trend_notifications: true, // Retained preference, push_notifications removed
         disliked_category: null,
+        ...data.preferences,
       },
-      privacy: {
-        hide_email: false,
-        location_sharing: true,
-        profile_sharing: true,
+      permissions: {
+        location: false,
+        camera: false,
+        pushNotifications: false,
+        showLocation: true,
+        profileVisibility: "public",
+        ...data.permissions,
       },
     };
 
@@ -60,6 +63,16 @@ export const goerService = {
   async updateGoer(uid: string, updates: Partial<Goer>): Promise<void> {
     const goerRef = doc(db, GOERS_COLLECTION, uid);
     await updateDoc(goerRef, updates);
+  },
+
+  /**
+   * Specifically update permission settings for a Goer
+   */
+  async updatePermissions(uid: string, permissions: Partial<GoerPermissions>): Promise<void> {
+    const goerRef = doc(db, GOERS_COLLECTION, uid);
+    await updateDoc(goerRef, {
+      permissions: permissions,
+    });
   },
 
   /**

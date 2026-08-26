@@ -1,7 +1,7 @@
 import { View, Text, Pressable, ScrollView } from "react-native";
 import {router} from "expo-router";
 import { Link2, Plus } from "lucide-react-native";
-import { CIRCLES, Circle, CircleMember } from "./circles-data";
+import { CIRCLES, Circle, CircleMember } from "../../../components/circles/circles-data";
 import { Header } from "@/components/textFormating";
 
 /* D:\Repos\get-up-and-go\packages\shared-ui\shared-ui.css */

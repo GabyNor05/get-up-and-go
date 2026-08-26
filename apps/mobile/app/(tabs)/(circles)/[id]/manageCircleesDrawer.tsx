@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Modal, View, Text, Pressable, ScrollView, Animated, Dimensions, NativeSyntheticEvent, NativeTouchEvent } from "react-native";
 import { UserPlus } from "lucide-react-native";
-import { CIRCLES } from "../circles-data";
+import { CIRCLES } from "../../../../components/circles/circles-data";
 
 interface Props {
   darkMode: boolean;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { ChevronLeft, X, Check } from "lucide-react-native";
-import { Circle } from "./circles-data";
+import { Circle } from "../../../components/circles/circles-data";
 
 interface Props {
   darkMode: boolean;

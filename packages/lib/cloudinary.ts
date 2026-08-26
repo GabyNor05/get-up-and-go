@@ -5,7 +5,7 @@ require('dotenv').config()
 
 export const cld = new Cloudinary({
   cloud: {
-    cloudName: process.env.CLOUDINARY_NAME ,
+    cloudName: process.env.EXPO_PUBLIC_CLOUDINARY_NAME,
   },
   url: {
     secure: true,

@@ -7,9 +7,9 @@ import {
   Animated,
   NativeSyntheticEvent,
   NativeTouchEvent,
+  StyleSheet,
 } from "react-native";
 import { router } from "expo-router";
-import Svg, { Circle } from "react-native-svg";
 import slide1 from "../../assets/onboarding/slide1.jpg";
 import slide2 from "../../assets/onboarding/slide2.jpg";
 import slide3 from "../../assets/onboarding/slide3.jpg";
@@ -98,10 +98,11 @@ export default function OnboardingScreen({
 
   const handleNext = () => {
     if (slideIndex < slides.length - 1) {
-      goTo(slideIndex + 1);
-    } else {
-      setStep("permissions");
-    }
+    goTo(slideIndex + 1);
+  } else {
+    // Navigate directly inside the action handler
+    router.push("/permissions"); 
+  }
   };
 
   const handleTouchStart = (e: NativeSyntheticEvent<NativeTouchEvent>) => {
@@ -118,16 +119,14 @@ export default function OnboardingScreen({
     touchStartX.current = null;
   };
 
-  if (step === "permissions") {
-    return router.push("/permissions");
-  }
+  
 
   const current = slides[slideIndex];
   const isLast = slideIndex === slides.length - 1;
 
   return (
     <View
-      style={{ flex: 1, backgroundColor: bg }}
+      style={{ flex: 1, backgroundColor: bg, paddingTop: 50, paddingBottom: 20 }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -138,7 +137,7 @@ export default function OnboardingScreen({
           justifyContent: "space-between",
           alignItems: "center",
           paddingHorizontal: 24,
-          paddingTop: 12,
+          paddingVertical: 10,
         }}
       >
         {toggleDark ? (
@@ -204,9 +203,8 @@ export default function OnboardingScreen({
       >
         <Text
           style={{
-            fontFamily: "Fredoka-SemiBold, sans-serif", // requires font loading
             fontSize: 36,
-            fontWeight: "600",
+            fontWeight: "700",
             color: text,
             lineHeight: 40,
             letterSpacing: -0.5,
@@ -258,33 +256,36 @@ export default function OnboardingScreen({
         </View>
 
         {/* CTA button */}
-        <Pressable
-          onPress={handleNext}
-          style={({ pressed }) => ({
-            backgroundColor: isLast ? "#A6C261" : "#A88AED",
-            borderRadius: 18,
-            paddingVertical: 17,
-            alignItems: "center",
-            opacity: pressed ? 0.9 : 1,
-            shadowColor: isLast ? "#A6C261" : "#A88AED",
-            shadowOpacity: 0.4,
-            shadowRadius: 28,
-            shadowOffset: { width: 0, height: 6 },
-            elevation: 5,
-          })}
-        >
-          <Text
-            style={{
-              color: "#FAF8F0",
-              fontSize: 16,
-              fontWeight: "700",
-              letterSpacing: 0.3,
-            }}
-          >
-            {isLast ? "Go to Permissions" : "Next"}
-          </Text>
-        </Pressable>
+        {/* CTA button */}
+<Pressable
+  onPress={handleNext}
+  style={[
+    styles.ctaButton,
+    { backgroundColor: isLast ? "#A6C261" : "#A88AED" },
+  ]}
+>
+  <Text
+    style={{
+      color: "#FAF8F0",
+      fontSize: 16,
+      fontWeight: "700",
+      letterSpacing: 0.3,
+    }}
+  >
+    {isLast ? "Go to Permissions" : "Next"}
+  </Text>
+</Pressable>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  ctaButton: {
+    width: "100%",
+    height: 54,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

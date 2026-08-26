@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { ChevronLeft } from "lucide-react-native";
-import { CIRCLES, CircleMember } from "../circles-data";
+import { CIRCLES, CircleMember } from "../../../../components/circles/circles-data";
 import { router } from "expo-router";
 
 interface Props {

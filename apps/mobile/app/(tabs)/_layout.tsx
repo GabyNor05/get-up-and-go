@@ -82,6 +82,7 @@ export default function TabLayout({darkMode}: Props) {
     ? 'rgba(36,34,27,0.92)'
     : 'rgba(250,248,240,0.92)';
   return (
+    
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: ACTIVE,
@@ -93,7 +94,7 @@ export default function TabLayout({darkMode}: Props) {
           alignItems: 'center',
           justifyContent: 'center',
           margin: "auto",
-          marginBottom: 20,
+          marginBottom: 50,
           width: "95%",
           borderRadius: 100,
           backgroundColor: "#FAF8F0",
@@ -118,9 +119,9 @@ export default function TabLayout({darkMode}: Props) {
         }}
       />
       <Tabs.Screen
-        name="(nearby)/index"
+        name="nearby"
         options={{
-          title: 'Happenings',
+          title: 'Nearby',
           tabBarIcon: buildTabIcon(MapPinned, 'Nearby', false),
         }}
       />
@@ -145,6 +146,7 @@ export default function TabLayout({darkMode}: Props) {
           tabBarIcon: buildTabIcon(Settings, 'Settings', false),
         }}
       />
+      
     </Tabs>
   );
 }

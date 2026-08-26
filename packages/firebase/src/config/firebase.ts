@@ -1,37 +1,43 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { 
   initializeAuth, 
-  getAuth,  
+  getAuth, 
+  // @ts-expect-error - getReactNativePersistence exists in RN runtime but is missing from static web types
+  getReactNativePersistence, 
   Auth 
 } from "firebase/auth";
-import { getReactNativePersistence } from "firebase/auth/react-native";
 import { getFirestore, Firestore } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Web app Firebase configuration typed explicitly
-const firebaseConfig = {
-  apiKey: "AIzaSyD4JZbgvsyhzIqReTpc2mG4T9toMk2GFTY",
-  authDomain: "get-up-and-go-4cd29.firebaseapp.com",
-  projectId: "get-up-and-go-4cd29",
-  storageBucket: "get-up-and-go-4cd29.firebasestorage.app",
-  messagingSenderId: "353001342742",
-  appId: "1:353001342742:web:404586c132c47935b27237",
+declare const process: {
+  env: {
+    [key: string]: string | undefined;
+  };
 };
 
-// Initialize Firebase App instance
+// Standard Expo environment variables
+const firebaseConfig = {
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+};
+
+// Initialize App
 const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Auth with AsyncStorage persistence for React Native / Expo
+// Initialize Auth with official React Native persistence helper
 let auth: Auth;
 try {
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage),
   });
-} catch (e) {
-  auth = getAuth(app); // Fallback if already initialized (prevents hot-reload errors)
+} catch {
+  auth = getAuth(app);
 }
 
-// Initialize Firestore Database instance
 const db: Firestore = getFirestore(app);
 
 export { app, auth, db };
