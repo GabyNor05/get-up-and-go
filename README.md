@@ -1,4 +1,6 @@
-# Get Up & Go (`get-up-and-go`)
+<img width="1280" height="425" alt="Github banner" src="https://github.com/user-attachments/assets/ff59982f-dbfd-4b19-a074-cfe4cd14a8e9" />
+
+# Get up & Go
 
 > A cross-platform ecosystem featuring a **React Native mobile application** and a companion **React web portal** for social activity planning, real-time event discovery, dynamic circle management, and community engagement.
 
@@ -120,10 +122,20 @@ For Mobile Development:
 ---
 ## 📽️ Mockups & Demo video
 
+<img width="4808" height="3384" alt="Mockup 01" src="https://github.com/user-attachments/assets/8f303d92-f6e3-40b2-84f7-525fe6d4b383" />
+
+<img width="4808" height="3384" alt="Mockup 02" src="https://github.com/user-attachments/assets/596c4982-18dc-4cde-9083-6a68cc8f756b" />
+
+<img width="4808" height="3384" alt="Mockup 03" src="https://github.com/user-attachments/assets/713d1bdf-d6ff-46ed-be28-0803ebc425b3" />
+
+<img width="4808" height="3384" alt="Mockup 04" src="https://github.com/user-attachments/assets/375d43c8-782b-4168-a708-835ee3f7a287" />
+
+<img width="4808" height="3384" alt="Mockup 05" src="https://github.com/user-attachments/assets/d9a6b7da-fcd4-4bdf-b962-2e89e6d25ee2" />
 
 
 
 [Demo Video](https://youtu.be/gdJVw8wriyY)
+
 ---
 ## 👏 Proud Moments
 
@@ -160,9 +172,11 @@ Beyond establishing a robust foundation for dynamic circles, gamified progress t
 ---
 ## ✨ Acknowledgements
 
-**Caylin Oosthuizen** commissioned for the making of the G&G logo.
-**Tsungai Katsuro** semester 2 lecturer, who guided us through this brief.
-**William Basson** semester 1 lecturer, who provided much needed feedback and guidence for the project.
+**Caylin Oosthuizen** commissioned for the making of the G&G logo — [View LinkedIn]("https://www.linkedin.com/in/caylin-oosthuizen-b905b7411?utm_source=share_via&utm_content=profile&utm_medium=member_android")
+
+**Tsungai Katsuro**, my semester 2 lecturer, who guided us through this brief.
+
+**William Basson**, my semester 1 lecturer, who provided much-needed feedback and guidance for the project.
 
 ---
 
