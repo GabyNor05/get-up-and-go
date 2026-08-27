@@ -172,7 +172,7 @@ Beyond establishing a robust foundation for dynamic circles, gamified progress t
 ---
 ## ✨ Acknowledgements
 
-**Caylin Oosthuizen** commissioned for the making of the G&G logo — [View LinkedIn]("https://www.linkedin.com/in/caylin-oosthuizen-b905b7411?utm_source=share_via&utm_content=profile&utm_medium=member_android")
+**Caylin Oosthuizen** commissioned for the making of the G&G logo — [View LinkedIn](https://www.linkedin.com/in/caylin-oosthuizen-b905b7411?utm_source=share_via&utm_content=profile&utm_medium=member_android)
 
 **Tsungai Katsuro**, my semester 2 lecturer, who guided us through this brief.
 
