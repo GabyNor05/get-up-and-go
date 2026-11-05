@@ -1,127 +1,127 @@
-/** @type {import('tailwindcss').Config['theme']} */
+/**
+ * Get Up & Go — design tokens (single source of truth).
+ * Values come from claude/DESIGN_DECISIONS.md. Mobile reads them through
+ * `tokens.ts`, web through `shared-ui.css` (CSS variables) and `daisyTheme`.
+ */
 
-const PALETTE = {
+const palette = {
+  indigo: { 900: '#352C53', 700: '#5B4C9E', 500: '#A88AED', 300: '#CDBDF6', 100: '#ECE4FC' },
+  celery: { 900: '#36421B', 700: '#5F7330', 500: '#A6C261', 300: '#C9DB9A', 100: '#E9F2D3' },
+  beige: { 900: '#24221B', 700: '#605E55', 500: '#F4F0DD', 300: '#FAF8F0' },
+  charcoal: '#1A1A1A',
+  white: '#FFFFFF',
+};
+
+const category = {
+  NATURE: '#A6C261',
+  MUSIC: '#A88AED',
+  GAMES: '#E87D6C',
+  FAMILY: '#E8A84C',
+  FOOD: '#6CB8E8',
+  SPORT: '#7DC98A',
+  COMMUNITY: '#A88AED',
+  ALL: '#A88AED',
+};
+
+const semantic = {
   light: {
-    bg: "c",
-    surface: "#FAF8F0",
-    surfaceRaised: "#FFFFFF",
-    text: "#24221B",
-    textMuted: "#605E55",
-    primary: "#A88AED",
-    primaryShade: "#352C53",
-    primaryDeepShade: "#64539E",
-    primaryTint: "#CBB9F4",
-    primaryTint2: "#ECE4FC",
-    accent: "#A6C261",
-    accentShade: "#6D843D",
-    accentDeepShade: "#36421B",
-    accentTint: "#C5D993",
-    accentTint2: "#E9F2D3",
-    border: "rgba(36,34,27,0.10)",
+    bgCanvas: '#F4F0DD',
+    bgSurface: '#FAF8F0',
+    bgElevated: '#FFFFFF',
+    textPrimary: '#1A1A1A',
+    textSecondary: '#605E55',
+    textBrand: '#5B4C9E',
+    textProgress: '#5F7330',
+    actionPrimary: '#5B4C9E',
+    onActionPrimary: '#FFFFFF',
+    actionSecondary: '#A6C261',
+    onActionSecondary: '#24221B',
+    fillBrandSubtle: '#ECE4FC',
+    fillProgressSubtle: '#E9F2D3',
+    borderSubtle: '#E2DCC4',
+    borderStrong: '#605E55',
+    focusRing: '#5B4C9E',
+    danger: '#A9483A',
+    fillDangerSubtle: '#FBE1DC',
   },
   dark: {
-    bg: "#1A1A1A",
-    surface: "#24221B",
-    surfaceRaised: "#2D2B22",
-    text: "#FAF8F0",
-    textMuted: "#B8B6AC",
-    primary: "#A88AED",
-    primaryShade: "#ECE4FC",
-    primaryDeepShade: "#CBB9F4",
-    primaryTint: "#64539E",
-    primaryTint2: "#352C53",
-    accent: "#A6C261",
-    accentShade: "#C5D993",
-    accentDeepShade: "#E9F2D3",
-    accentTint: "#6D843D",
-    accentTint2: "#36421B",
-    border: "rgba(250,248,240,0.12)",
+    bgCanvas: '#1A1A1A',
+    bgSurface: '#24221B',
+    bgElevated: '#2E2B23',
+    textPrimary: '#FAF8F0',
+    textSecondary: '#BDB8A6',
+    textBrand: '#CDBDF6',
+    textProgress: '#C9DB9A',
+    actionPrimary: '#A88AED',
+    onActionPrimary: '#1A1A1A',
+    actionSecondary: '#A6C261',
+    onActionSecondary: '#24221B',
+    fillBrandSubtle: '#352C53',
+    fillProgressSubtle: '#36421B',
+    borderSubtle: '#3A372D',
+    borderStrong: '#8A8576',
+    focusRing: '#CDBDF6',
+    danger: '#F0A396',
+    fillDangerSubtle: '#4A221C',
+  },
+};
+
+const fonts = {
+  display: 'ADayWithoutSun',
+  body: 'Arial',
+};
+
+const typeScale = {
+  displayXl: { fontSize: 40, lineHeight: 44 },
+  displayLg: { fontSize: 32, lineHeight: 36 },
+  title: { fontSize: 24, lineHeight: 28 },
+  heading: { fontSize: 20, lineHeight: 24 },
+  bodyLg: { fontSize: 17, lineHeight: 24 },
+  body: { fontSize: 15, lineHeight: 22 },
+  label: { fontSize: 13, lineHeight: 18 },
+  caption: { fontSize: 12, lineHeight: 16 },
+};
+
+const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, '2xl': 24, '3xl': 32, '4xl': 48 };
+const radius = { sm: 8, md: 12, lg: 20, xl: 28, pill: 999 };
+
+/** kebab-case CSS variable name for a semantic key, e.g. bgCanvas -> --gng-bg-canvas */
+const cssVar = (key) => `--gng-${key.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`)}`;
+
+/** Tailwind colours that resolve to the CSS variables in shared-ui.css */
+const tailwindColors = {
+  gng: Object.fromEntries(
+    Object.keys(semantic.light).map((key) => [key, `var(${cssVar(key)})`]),
+  ),
+  category,
+};
+
+/** DaisyUI theme for the web portal */
+const daisyTheme = {
+  gng: {
+    primary: semantic.light.actionPrimary,
+    'primary-content': semantic.light.onActionPrimary,
+    secondary: semantic.light.actionSecondary,
+    'secondary-content': semantic.light.onActionSecondary,
+    accent: palette.indigo[500],
+    neutral: palette.beige[900],
+    'base-100': semantic.light.bgCanvas,
+    'base-200': semantic.light.bgSurface,
+    'base-300': semantic.light.borderSubtle,
+    'base-content': semantic.light.textPrimary,
+    error: semantic.light.danger,
   },
 };
 
 module.exports = {
-  colors: {
-    gng: {
-      // Light Mode Tokens
-      bg: {
-        light: PALETTE.light.bg,
-        dark: PALETTE.dark.bg,
-      },
-      surface: {
-        light: PALETTE.light.surface,
-        dark: PALETTE.dark.surface,
-      },
-      surfaceRaised: {
-        light: PALETTE.light.surfaceRaised,
-        dark: PALETTE.dark.surfaceRaised,
-      },
-      text: {
-        light: PALETTE.light.text,
-        dark: PALETTE.dark.text,
-        mutedLight: PALETTE.light.textMuted,
-        mutedDark: PALETTE.dark.textMuted,
-      },
-      border: {
-        light: PALETTE.light.border,
-        dark: PALETTE.dark.border,
-      },
-
-      // Brand Colors (Light / Dark mapped)
-      primary: {
-        DEFAULT: PALETTE.light.primary,
-        shade: {
-          light: PALETTE.light.primaryShade,
-          dark: PALETTE.dark.primaryShade,
-        },
-        deepShade: {
-          light: PALETTE.light.primaryDeepShade,
-          dark: PALETTE.dark.primaryDeepShade,
-        },
-        tint: {
-          light: PALETTE.light.primaryTint,
-          dark: PALETTE.dark.primaryTint,
-        },
-        tint2: {
-          light: PALETTE.light.primaryTint2,
-          dark: PALETTE.dark.primaryTint2,
-        },
-      },
-      accent: {
-        DEFAULT: PALETTE.light.accent,
-        shade: {
-          light: PALETTE.light.accentShade,
-          dark: PALETTE.dark.accentShade,
-        },
-        deepShade: {
-          light: PALETTE.light.accentDeepShade,
-          dark: PALETTE.dark.accentDeepShade,
-        },
-        tint: {
-          light: PALETTE.light.accentTint,
-          dark: PALETTE.dark.accentTint,
-        },
-        tint2: {
-          light: PALETTE.light.accentTint2,
-          dark: PALETTE.dark.accentTint2,
-        },
-      },
-    },
-  },
-
-  fontFamily: {
-    heading: ['"A Day Without Sun"', 'sans-serif'],
-    sans: ['Arial', 'sans-serif'],
-    body: ['Arial', 'sans-serif'],
-  },
-
-  fontSize: {
-    display: ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.02em' }], // 36px
-    h1: ['1.75rem', { lineHeight: '2.125rem', letterSpacing: '-0.01em' }],   // 28px
-    h2: ['1.375rem', { lineHeight: '1.75rem' }],                            // 22px
-    h3: ['1.125rem', { lineHeight: '1.5rem' }],                             // 18px
-    'body-lg': ['1rem', { lineHeight: '1.5rem' }],                            // 16px
-    body: ['0.938rem', { lineHeight: '1.375rem' }],                         // 15px
-    caption: ['0.813rem', { lineHeight: '1.125rem' }],                      // 13px
-    tiny: ['0.688rem', { lineHeight: '0.875rem' }],                         // 11px
-  },
+  palette,
+  category,
+  semantic,
+  fonts,
+  typeScale,
+  spacing,
+  radius,
+  cssVar,
+  tailwindColors,
+  daisyTheme,
 };

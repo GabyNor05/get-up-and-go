@@ -1,62 +1,70 @@
-/* ==========================================================================
-   1. COLOR TOKENS & DESIGN SYSTEM VARIABLES
-   ========================================================================== */
+/* Generated from shared-theme.js. Edit the tokens there, then run:
+   node packages/shared-ui/scripts/build-css.js */
+
 :root {
-  /* Canvas & Base Tokens */
-  --gng-bg: #F4F0DD;
-  --gng-surface: #FAF8F0;
-  --gng-surface-raised: #FFFFFF;
-  --gng-text: #24221B;
-  --gng-text-muted: #605E55;
-  --gng-border: rgba(36, 34, 27, 0.10);
-
-  /* Primary Brand (Indigo) */
-  --gng-primary: #A88AED;
-  --gng-primary-shade: #352C53;
-  --gng-primary-deep-shade: #64539E;
-  --gng-primary-tint: #CBB9F4;
-  --gng-primary-tint2: #ECE4FC;
-
-  /* Accent Brand (Celery/Green) */
-  --gng-accent: #A6C261;
-  --gng-accent-shade: #6D843D;
-  --gng-accent-deep-shade: #36421B;
-  --gng-accent-tint: #C5D993;
-  --gng-accent-tint2: #E9F2D3;
-
-  /* Typography Families */
-  --font-heading: 'ADayWithoutSun';
-  --font-body: Arial;
+  --gng-bg-canvas: #F4F0DD;
+  --gng-bg-surface: #FAF8F0;
+  --gng-bg-elevated: #FFFFFF;
+  --gng-text-primary: #1A1A1A;
+  --gng-text-secondary: #605E55;
+  --gng-text-brand: #5B4C9E;
+  --gng-text-progress: #5F7330;
+  --gng-action-primary: #5B4C9E;
+  --gng-on-action-primary: #FFFFFF;
+  --gng-action-secondary: #A6C261;
+  --gng-on-action-secondary: #24221B;
+  --gng-fill-brand-subtle: #ECE4FC;
+  --gng-fill-progress-subtle: #E9F2D3;
+  --gng-border-subtle: #E2DCC4;
+  --gng-border-strong: #605E55;
+  --gng-focus-ring: #5B4C9E;
+  --gng-danger: #A9483A;
+  --gng-fill-danger-subtle: #FBE1DC;
+  --gng-category-nature: #A6C261;
+  --gng-category-music: #A88AED;
+  --gng-category-games: #E87D6C;
+  --gng-category-family: #E8A84C;
+  --gng-category-food: #6CB8E8;
+  --gng-category-sport: #7DC98A;
+  --gng-category-community: #A88AED;
+  --gng-category-all: #A88AED;
+  --gng-radius-sm: 8px;
+  --gng-radius-md: 12px;
+  --gng-radius-lg: 20px;
+  --gng-radius-xl: 28px;
+  --gng-radius-pill: 999px;
+  --gng-font-display: "ADayWithoutSun", "Arial Rounded MT Bold", sans-serif;
+  --gng-font-body: Arial, sans-serif;
+  --gng-shadow-card: 0 2px 8px rgba(36, 34, 27, 0.08);
+  --gng-shadow-float: 0 8px 24px rgba(36, 34, 27, 0.16);
 }
 
-/* Dark Mode Overrides */
 .dark,
-[data-theme='dark'] {
-  --gng-bg: #1A1A1A;
-  --gng-surface: #24221B;
-  --gng-surface-raised: #2D2B22;
-  --gng-text: #FAF8F0;
-  --gng-text-muted: #B8B6AC;
-  --gng-border: rgba(250, 248, 240, 0.12);
-
-  --gng-primary-shade: #ECE4FC;
-  --gng-primary-deep-shade: #CBB9F4;
-  --gng-primary-tint: #64539E;
-  --gng-primary-tint2: #352C53;
-
-  --gng-accent-shade: #C5D993;
-  --gng-accent-deep-shade: #E9F2D3;
-  --gng-accent-tint: #6D843D;
-  --gng-accent-tint2: #36421B;
+[data-theme="dark"] {
+  --gng-bg-canvas: #1A1A1A;
+  --gng-bg-surface: #24221B;
+  --gng-bg-elevated: #2E2B23;
+  --gng-text-primary: #FAF8F0;
+  --gng-text-secondary: #BDB8A6;
+  --gng-text-brand: #CDBDF6;
+  --gng-text-progress: #C9DB9A;
+  --gng-action-primary: #A88AED;
+  --gng-on-action-primary: #1A1A1A;
+  --gng-action-secondary: #A6C261;
+  --gng-on-action-secondary: #24221B;
+  --gng-fill-brand-subtle: #352C53;
+  --gng-fill-progress-subtle: #36421B;
+  --gng-border-subtle: #3A372D;
+  --gng-border-strong: #8A8576;
+  --gng-focus-ring: #CDBDF6;
+  --gng-danger: #F0A396;
+  --gng-fill-danger-subtle: #4A221C;
 }
 
-/* ==========================================================================
-   2. TYPOGRAPHY UTILITIES
-   ========================================================================== */
-.font-heading {
-  font-family: var(--font-heading);
+.font-display {
+  font-family: var(--gng-font-display);
 }
 
 .font-body {
-  font-family: var(--font-body);
+  font-family: var(--gng-font-body);
 }
