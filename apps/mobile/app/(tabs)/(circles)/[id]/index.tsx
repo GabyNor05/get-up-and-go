@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Check, ChevronLeft, LogOut, Share2 } from 'lucide-react-native';
+import { Check, ChevronLeft, Share2, Users } from 'lucide-react-native';
 
 import { Podium } from '@/components/circles/Podium';
+import { ManageCircleesSheet } from '@/components/circles/ManageCircleesSheet';
+import { InviteCircleeSheet } from '@/components/circles/InviteCircleeSheet';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { useGoer } from '@/hooks/useGoer';
 import { useCircle } from '@/hooks/useCircles';
@@ -23,6 +25,8 @@ export default function CircleDetailScreen() {
   const { circle, members, loading } = useCircle(id);
   const feed = useCircleFeed(id ? [id] : [], 20);
   const [meTooIds, setMeTooIds] = useState<Set<string>>(new Set());
+  const [manageOpen, setManageOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   const goBack = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)/(circles)'));
 
@@ -66,6 +70,7 @@ export default function CircleDetailScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
+            setManageOpen(false);
             await circleService.removeMemberFromCircle(circle.id as string, goerId);
             await goerService.leaveCircle(goerId, circle.id as string);
             goBack();
@@ -208,11 +213,33 @@ export default function CircleDetailScreen() {
           )}
         </View>
 
-        <Pressable onPress={handleLeave} style={[styles.leave, { borderColor: t.danger }]}>
-          <LogOut size={16} color={t.danger} />
-          <Text style={[styles.secondaryText, { color: t.danger }]}>Leave Circle</Text>
-        </Pressable>
       </ScrollView>
+
+      {/* Thumb-zone action */}
+      <View style={[styles.footer, { backgroundColor: t.bgCanvas, borderTopColor: t.borderSubtle }]}>
+        <Pressable onPress={() => setManageOpen(true)} style={[styles.manage, { backgroundColor: t.actionPrimary }]}>
+          <Users size={18} color={t.onActionPrimary} />
+          <Text style={[styles.secondaryText, { color: t.onActionPrimary }]}>Manage Circlees</Text>
+        </Pressable>
+      </View>
+
+      <ManageCircleesSheet
+        visible={manageOpen}
+        circle={circle}
+        members={members}
+        currentUid={goerId}
+        onClose={() => setManageOpen(false)}
+        onViewProfile={(uid) => {
+          setManageOpen(false);
+          router.push({ pathname: '/(tabs)/(circles)/goer/[goerId]', params: { goerId: uid } });
+        }}
+        onInvite={() => {
+          setManageOpen(false);
+          setInviteOpen(true);
+        }}
+        onLeave={handleLeave}
+      />
+      <InviteCircleeSheet visible={inviteOpen} circle={circle} onClose={() => setInviteOpen(false)} />
     </View>
   );
 }
@@ -378,14 +405,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
-  leave: {
+  footer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+  },
+  manage: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    height: 48,
+    height: 52,
     borderRadius: radius.pill,
-    borderWidth: 1.5,
-    marginTop: 8,
   },
 });

@@ -7,8 +7,13 @@ import type { Circle } from '../../../packages/firebase/src/types/circle';
 export interface CircleMember {
   uid: string;
   username: string;
+  email: string;
+  /** Public Goer ID, e.g. "ZDUX-08-DP" */
+  goerId: string;
+  avatarPublicId: string;
   monthlyGp: number;
   totalGp: number;
+  circleCount: number;
 }
 
 /** Live list of the Circles a Goer belongs to */
@@ -46,18 +51,23 @@ export function useMyCircles(uid: string | null) {
   return { circles, loading, error };
 }
 
-async function loadMember(uid: string): Promise<CircleMember> {
+export async function loadMember(uid: string): Promise<CircleMember> {
   try {
     const [userSnap, goerSnap] = await Promise.all([getDoc(doc(db, 'users', uid)), getDoc(doc(db, 'goers', uid))]);
     const goer = goerSnap.data();
+    const user = userSnap.data();
     return {
       uid,
-      username: (userSnap.data()?.username as string | undefined) ?? 'Goer',
+      username: (user?.username as string | undefined) ?? 'Goer',
+      email: (user?.email as string | undefined) ?? '',
+      goerId: (goer?.goer_id as string | undefined) ?? '',
+      avatarPublicId: (goer?.avatarPublicId as string | undefined) ?? '',
       monthlyGp: (goer?.monthly_gp as number | undefined) ?? 0,
       totalGp: (goer?.total_gp as number | undefined) ?? 0,
+      circleCount: ((goer?.circles as string[] | undefined) ?? []).length,
     };
   } catch {
-    return { uid, username: 'Goer', monthlyGp: 0, totalGp: 0 };
+    return { uid, username: 'Goer', email: '', goerId: '', avatarPublicId: '', monthlyGp: 0, totalGp: 0, circleCount: 0 };
   }
 }
 

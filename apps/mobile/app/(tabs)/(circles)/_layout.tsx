@@ -10,6 +10,7 @@ export default function CirclesLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="[id]/index" />
       <Stack.Screen name="newCircleForm" />
+      <Stack.Screen name="goer/[goerId]" />
     </Stack>
   );
 }
