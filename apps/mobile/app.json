@@ -1,28 +1,33 @@
 {
   "expo": {
     "name": "Get Up & Go",
-    "slug": "Your new way to get out",
+    "slug": "get-up-and-go",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "../../packages/shared-ui/assets/logos/lightBgLogo.png",
-    "scheme": "mobile",
+    "icon": "./assets/app-icon.png",
+    "scheme": "getupandgo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "adaptiveIcon": {
-        "backgroundColor": "#FAF8F0",
-        "foregroundImage": "./assets/apple-touch-icon.png"
-      },
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.gabynorris.getupandgo"
     },
     "android": {
+      "package": "com.gabynorris.getupandgo",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#FAF8F0",
-        "foregroundImage": "./assets/favicon-96x96.png"
+        "foregroundImage": "./assets/adaptive-icon-foreground.png",
+        "backgroundColor": "#F4F0DD"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.Yournewwaytogetout"
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.SCHEDULE_EXACT_ALARM"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -30,7 +35,40 @@
       "favicon": "./assets/favicon-96x96.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-logo.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#F4F0DD",
+          "dark": {
+            "image": "./assets/splash-logo.png",
+            "backgroundColor": "#1A1A1A"
+          }
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Get Up & Go uses your camera to scan venue QR codes when you check in to a Happening.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Get Up & Go uses your location to show Happenings near you."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#5B4C9E"
+        }
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

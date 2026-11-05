@@ -1,0 +1,37 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "node": "20.19.4",
+      "env": {
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyD4JZbgvsyhzIqReTpc2mG4T9toMk2GFTY",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "get-up-and-go-4cd29.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "get-up-and-go-4cd29",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "get-up-and-go-4cd29.firebasestorage.app",
+        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "353001342742",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:353001342742:web:404586c132c47935b27237",
+        "EXPO_PUBLIC_CLOUDINARY_NAME": "dvkt6agj3"
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
