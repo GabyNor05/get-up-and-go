@@ -32,6 +32,8 @@ import {
 import { getAuth, signOut } from "firebase/auth";
 import { useGoer } from "../../../hooks/useGoer";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { useGoPoints } from "@/hooks/useGoPoints";
+import { Avatar } from "@/components/ui/Avatar";
 import { seedDemoData } from "@/scripts/seedDemoData";
 import { EditProfilePanel } from "@/components/settings/EditProfilePanel";
 import { PreferencesPanel } from "@/components/settings/PreferencesPanel";
@@ -49,6 +51,8 @@ export default function SettingsScreen() {
   const [seeding, setSeeding] = useState(false);
   const { isDark: darkMode, t, setPreference } = useAppTheme();
   const { goerId, username, email, isAdmin } = useGoer();
+  // Live goers doc, so a new avatar from Edit Profile shows straight away
+  const { goer } = useGoPoints(goerId);
   const [activeDrawer, setActiveDrawer] = useState<DrawerType>(null);
 
 
@@ -130,10 +134,8 @@ export default function SettingsScreen() {
           ]}
         >
           <View style={styles.profileHeader}>
-            <View style={[styles.avatar, { backgroundColor: t.actionPrimary }]}>
-              <Text style={[styles.avatarText, { color: t.onActionPrimary }]}>
-                {username ? username.charAt(0).toUpperCase() : "G"}
-              </Text>
+            <View style={styles.avatar}>
+              <Avatar name={username || "G"} avatarPublicId={goer?.avatarPublicId} size={60} />
             </View>
             <View style={{ flex: 1 }}>
               <View style={styles.nameBadgeRow}>
