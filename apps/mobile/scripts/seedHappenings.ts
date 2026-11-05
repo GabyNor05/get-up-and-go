@@ -1,8 +1,12 @@
-import { collection, addDoc, Timestamp, GeoPoint } from "firebase/firestore";
+import { doc, setDoc, Timestamp, GeoPoint } from "firebase/firestore";
 import { db } from "../../../packages/firebase/src/config/firebase";
 import type { Happening } from "../../../packages/firebase/src/types/happening";
 
-export async function injectPretoriaHappenings() {
+/**
+ * Writes the demo Gauteng Happenings with fixed document ids, so running it
+ * again refreshes them (dates move relative to "now") instead of duplicating.
+ */
+export async function injectPretoriaHappenings(): Promise<number> {
   const nowMs = Date.now();
   const hourMs = 60 * 60 * 1000;
 
@@ -270,7 +274,7 @@ export async function injectPretoriaHappenings() {
 
   for (const item of venues) {
     const eventDate = new Date(nowMs + item.offsetHours * hourMs);
-    await addDoc(collection(db, "happenings"), {
+    await setDoc(doc(db, "happenings", item.id), {
       partner_id: item.partner_id,
       title: item.title,
       thumbnail_url: item.thumbnail_url,
@@ -286,5 +290,5 @@ export async function injectPretoriaHappenings() {
     });
   }
 
-  console.log("Successfully seeded 17 Happenings adhering strictly to the model schema!");
+  return venues.length;
 }

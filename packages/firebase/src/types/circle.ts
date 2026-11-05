@@ -13,7 +13,8 @@ export interface Circle {
   accent: string;                     // Primary hex color
   card_bg: CardBgTheme;               // Light & Dark background colors
   tags: string[];                     // Category tags (up to 4)
-  goer_ids: string[];                 // Array of member IDs (FK references to goers)
+  goer_ids: string[];                 // Member Firebase Auth UIDs (goers/{uid})
+  join_code?: string;                 // Shareable code, e.g. "GRLZ-4TQ"
   max_size: number;                   // Max circle capacity (e.g. 20)
   everybody_sends_invites: boolean;   // Permissions toggle
   created_at: Timestamp;              // Server timestamp

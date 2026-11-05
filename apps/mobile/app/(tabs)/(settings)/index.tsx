@@ -10,7 +10,9 @@ import {
   StyleSheet,
   Alert,
   Share,
+  ActivityIndicator,
 } from "react-native";
+import { useRouter } from "expo-router";
 import {
   User as UserIcon,
   Bell,
@@ -24,20 +26,21 @@ import {
   X,
   Sliders,
   ShieldCheck,
+  Database,
 } from "lucide-react-native";
 import { getAuth, signOut } from "firebase/auth";
 import { useGoer } from "../../../hooks/useGoer";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { seedDemoData } from "@/scripts/seedDemoData";
 
-interface Props {
-  onNavigateDev?: () => void;
-}
 
 type DrawerType = "edit_profile" | "preferences" | "privacy" | "help" | null;
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
-export default function SettingsScreen({ onNavigateDev }: Props) {
+export default function SettingsScreen() {
+  const router = useRouter();
+  const [seeding, setSeeding] = useState(false);
   const { isDark: darkMode, t, setPreference } = useAppTheme();
   const { goerId, username } = useGoer();
   const [activeDrawer, setActiveDrawer] = useState<DrawerType>(null);
@@ -74,6 +77,22 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
       await signOut(getAuth());
     } catch (err) {
       Alert.alert("Logout Error", "Failed to sign out cleanly.");
+    }
+  };
+
+  const handleSeed = async () => {
+    setSeeding(true);
+    try {
+      const result = await seedDemoData(goerId);
+      Alert.alert(
+        "Demo data added",
+        `${result.happenings} Happenings, ${result.circles} Circles, ${result.goers} demo Goers and ${result.levels} levels.`,
+      );
+    } catch (err) {
+      console.error("Seeding failed", err);
+      Alert.alert("Couldn't add demo data", "Check your connection and Firestore rules, then try again.");
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -231,27 +250,33 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
           </Pressable>
         </View>
 
-        {/* Developer Portal Option */}
-        {onNavigateDev && (
-          <View
-            style={[
-              styles.cardGroup,
-              { backgroundColor: surface, borderColor: border },
-            ]}
-          >
+        {/* Developer tools — only in development builds / Expo Go */}
+        {__DEV__ && (
+          <View style={[styles.cardGroup, { backgroundColor: surface, borderColor: border }]}>
             <Pressable
-              onPress={onNavigateDev}
-              style={[styles.rowItem]}
+              onPress={handleSeed}
+              disabled={seeding}
+              style={[styles.rowItem, { borderBottomWidth: 1, borderColor: border }]}
             >
+              <View style={styles.rowLeft}>
+                <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
+                  <Database size={16} color={accent} />
+                </View>
+                <View>
+                  <Text style={[styles.rowLabel, { color: textPrimary }]}>Seed demo data</Text>
+                  <Text style={{ fontSize: 12, color: muted }}>Happenings, Circles, levels</Text>
+                </View>
+              </View>
+              {seeding ? <ActivityIndicator color={accent} /> : <ChevronRight size={18} color={muted} />}
+            </Pressable>
+            <Pressable onPress={() => router.push("/DevHappeningScreen")} style={[styles.rowItem]}>
               <View style={styles.rowLeft}>
                 <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
                   <Code2 size={16} color={accent} />
                 </View>
-                <Text style={[styles.rowLabel, { color: accent, fontWeight: "600" }]}>
-                  Dev Portal & QR Generator
-                </Text>
+                <Text style={[styles.rowLabel, { color: textPrimary }]}>Dev QR tools</Text>
               </View>
-              <ChevronRight size={18} color={accent} />
+              <ChevronRight size={18} color={muted} />
             </Pressable>
           </View>
         )}
