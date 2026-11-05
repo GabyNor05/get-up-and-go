@@ -27,14 +27,20 @@ import {
   Sliders,
   ShieldCheck,
   Database,
+  Wand2,
 } from "lucide-react-native";
 import { getAuth, signOut } from "firebase/auth";
 import { useGoer } from "../../../hooks/useGoer";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { seedDemoData } from "@/scripts/seedDemoData";
+import { EditProfilePanel } from "@/components/settings/EditProfilePanel";
+import { PreferencesPanel } from "@/components/settings/PreferencesPanel";
+import { PrivacyPanel } from "@/components/settings/PrivacyPanel";
+import { HelpPanel } from "@/components/settings/HelpPanel";
+import { DemoGeneratorPanel } from "@/components/settings/DemoGeneratorPanel";
 
 
-type DrawerType = "edit_profile" | "preferences" | "privacy" | "help" | null;
+type DrawerType = "edit_profile" | "preferences" | "privacy" | "help" | "demo" | null;
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -42,13 +48,9 @@ export default function SettingsScreen() {
   const router = useRouter();
   const [seeding, setSeeding] = useState(false);
   const { isDark: darkMode, t, setPreference } = useAppTheme();
-  const { goerId, username } = useGoer();
+  const { goerId, username, email, isAdmin } = useGoer();
   const [activeDrawer, setActiveDrawer] = useState<DrawerType>(null);
 
-  // Settings Toggles State
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [hideEmail, setHideEmail] = useState(false);
-  const [locationSharing, setLocationSharing] = useState(true);
 
   // Side Drawer Slide Animation
   const drawerAnim = useRef(new Animated.Value(SCREEN_WIDTH)).current;
@@ -252,7 +254,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* Developer tools — only in development builds / Expo Go */}
-        {__DEV__ && (
+        {isAdmin && (
           <View style={[styles.cardGroup, { backgroundColor: surface, borderColor: border }]}>
             <Pressable
               onPress={handleSeed}
@@ -269,6 +271,21 @@ export default function SettingsScreen() {
                 </View>
               </View>
               {seeding ? <ActivityIndicator color={accent} /> : <ChevronRight size={18} color={muted} />}
+            </Pressable>
+            <Pressable
+              onPress={() => openDrawer("demo")}
+              style={[styles.rowItem, { borderBottomWidth: 1, borderColor: border }]}
+            >
+              <View style={styles.rowLeft}>
+                <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
+                  <Wand2 size={16} color={accent} />
+                </View>
+                <View>
+                  <Text style={[styles.rowLabel, { color: textPrimary }]}>Generate demo Happenings</Text>
+                  <Text style={{ fontSize: 12, color: muted }}>Pick an area, dates and radius</Text>
+                </View>
+              </View>
+              <ChevronRight size={18} color={muted} />
             </Pressable>
             <Pressable onPress={() => router.push("/DevHappeningScreen")} style={[styles.rowItem]}>
               <View style={styles.rowLeft}>
@@ -313,77 +330,21 @@ export default function SettingsScreen() {
                 {activeDrawer === "preferences" && "Preferences"}
                 {activeDrawer === "privacy" && "Privacy & Security"}
                 {activeDrawer === "help" && "Help & Support"}
+                {activeDrawer === "demo" && "Demo Happenings"}
               </Text>
               <Pressable onPress={closeDrawer} hitSlop={10}>
                 <X size={20} color={textPrimary} />
               </Pressable>
             </View>
 
-            <ScrollView contentContainerStyle={{ padding: 20 }}>
-              {activeDrawer === "preferences" && (
-                <View style={{ gap: 20 }}>
-                  <View style={styles.toggleRow}>
-                    <View style={{ flex: 1, paddingRight: 12 }}>
-                      <Text style={[styles.toggleLabel, { color: textPrimary }]}>
-                        Push Notifications
-                      </Text>
-                      <Text style={{ fontSize: 12, color: muted, marginTop: 2 }}>
-                        Receive alerts for nearby happenings
-                      </Text>
-                    </View>
-                    <Switch
-                      value={pushNotifications}
-                      onValueChange={setPushNotifications}
-                      trackColor={{ false: t.borderSubtle, true: t.actionPrimary }}
-                      thumbColor="#FAF8F0"
-                    />
-                  </View>
-                </View>
+            <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 48 }} keyboardShouldPersistTaps="handled">
+              {activeDrawer === "edit_profile" && goerId && (
+                <EditProfilePanel goerId={goerId} username={username} onSaved={closeDrawer} />
               )}
-
-              {activeDrawer === "privacy" && (
-                <View style={{ gap: 20 }}>
-                  <View style={styles.toggleRow}>
-                    <View style={{ flex: 1, paddingRight: 12 }}>
-                      <Text style={[styles.toggleLabel, { color: textPrimary }]}>
-                        Hide Email Address
-                      </Text>
-                      <Text style={{ fontSize: 12, color: muted, marginTop: 2 }}>
-                        Keep email address hidden from public profile
-                      </Text>
-                    </View>
-                    <Switch
-                      value={hideEmail}
-                      onValueChange={setHideEmail}
-                      trackColor={{ false: t.borderSubtle, true: t.actionPrimary }}
-                      thumbColor="#FAF8F0"
-                    />
-                  </View>
-
-                  <View style={styles.toggleRow}>
-                    <View style={{ flex: 1, paddingRight: 12 }}>
-                      <Text style={[styles.toggleLabel, { color: textPrimary }]}>
-                        Location Sharing
-                      </Text>
-                      <Text style={{ fontSize: 12, color: muted, marginTop: 2 }}>
-                        Share coarse location for nearby happenings
-                      </Text>
-                    </View>
-                    <Switch
-                      value={locationSharing}
-                      onValueChange={setLocationSharing}
-                      trackColor={{ false: t.borderSubtle, true: t.actionPrimary }}
-                      thumbColor="#FAF8F0"
-                    />
-                  </View>
-                </View>
-              )}
-
-              {(activeDrawer === "edit_profile" || activeDrawer === "help") && (
-                <Text style={{ color: muted, fontSize: 14 }}>
-                  Section options coming soon...
-                </Text>
-              )}
+              {activeDrawer === "preferences" && <PreferencesPanel />}
+              {activeDrawer === "privacy" && goerId && <PrivacyPanel goerId={goerId} email={email} />}
+              {activeDrawer === "help" && <HelpPanel />}
+              {activeDrawer === "demo" && isAdmin && <DemoGeneratorPanel />}
             </ScrollView>
           </Animated.View>
         </View>

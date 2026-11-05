@@ -126,11 +126,9 @@ export default function LoginScreen() {
           </Pressable>
         </View>
 
-        {__DEV__ ? (
-          <Pressable onPress={() => router.push('/DevHappeningScreen')} style={styles.devLink}>
-            <Text style={[styles.devText, { color: t.textSecondary }]}>Open dev tools</Text>
-          </Pressable>
-        ) : null}
+        <Pressable onPress={() => router.push('/DevHappeningScreen')} style={styles.devLink}>
+          <Text style={[styles.devText, { color: t.textSecondary }]}>Open dev tools</Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );

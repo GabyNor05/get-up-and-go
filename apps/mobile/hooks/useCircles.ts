@@ -59,7 +59,8 @@ export async function loadMember(uid: string): Promise<CircleMember> {
     return {
       uid,
       username: (user?.username as string | undefined) ?? 'Goer',
-      email: (user?.email as string | undefined) ?? '',
+      // Respect Settings → Privacy → Hide my email
+      email: goer?.permissions?.hide_email ? '' : ((user?.email as string | undefined) ?? ''),
       goerId: (goer?.goer_id as string | undefined) ?? '',
       avatarPublicId: (goer?.avatarPublicId as string | undefined) ?? '',
       monthlyGp: (goer?.monthly_gp as number | undefined) ?? 0,

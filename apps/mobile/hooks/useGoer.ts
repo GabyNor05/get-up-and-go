@@ -1,61 +1,73 @@
-// apps/mobile/hooks/useGoer.ts
-import { useEffect, useState } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../../packages/firebase/src/config/firebase";
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, onSnapshot } from 'firebase/firestore';
 
-export interface UserProfile {
-  uid: string;
+import { auth, db } from '../../../packages/firebase/src/config/firebase';
+
+/** Emails that see the developer tools in Settings */
+const ADMIN_EMAILS = ['gabynorris616@gmail.com', 'gabby.norris616@gmail.com'];
+
+export interface GoerIdentity {
+  /** Firebase Auth UID */
+  goerId: string | null;
   username: string;
-  email: string;
-  role: string;
+  email: string | null;
+  role: string | null;
+  /** Gaby's account (or any `admin` role): shows dev tools */
+  isAdmin: boolean;
+  loading: boolean;
 }
 
-export function useGoer() {
+const FALLBACK_NAME = 'A goer';
+
+/** The signed-in Goer, kept live with their `users` doc (so profile edits show straight away) */
+export function useGoer(): GoerIdentity {
   const [goerId, setGoerId] = useState<string | null>(null);
-  const [username, setUsername] = useState<string>("A goer");
+  const [email, setEmail] = useState<string | null>(null);
+  const [username, setUsername] = useState(FALLBACK_NAME);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // Goer ID is the Firebase Auth UID
-        const currentUid = firebaseUser.uid;
-        setGoerId(currentUid);
+    let unsubscribeUser: (() => void) | undefined;
 
-        try {
-          // Fetch the user document from the 'users' collection using the goer's uid
-          const userDocRef = doc(db, "users", currentUid);
-          const userSnap = await getDoc(userDocRef);
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      unsubscribeUser?.();
+      unsubscribeUser = undefined;
 
-          if (userSnap.exists()) {
-            const userData = userSnap.data() as UserProfile;
-            if (userData.username) {
-              setUsername(userData.username);
-            }
-          } else {
-            // Fallback username if doc hasn't loaded yet
-            setUsername(firebaseUser.email?.split("@")[0] || "A goer");
-          }
-        } catch (err) {
-          console.error("Error fetching user document by uid:", err);
-          setUsername("A goer");
-        }
-      } else {
+      if (!firebaseUser) {
         setGoerId(null);
-        setUsername("A goer");
+        setEmail(null);
+        setUsername(FALLBACK_NAME);
+        setRole(null);
+        setLoading(false);
+        return;
       }
 
-      setLoading(false);
+      setGoerId(firebaseUser.uid);
+      setEmail(firebaseUser.email);
+      unsubscribeUser = onSnapshot(
+        doc(db, 'users', firebaseUser.uid),
+        (snap) => {
+          const data = snap.data();
+          setUsername((data?.username as string | undefined) || firebaseUser.email?.split('@')[0] || FALLBACK_NAME);
+          setRole((data?.role as string | undefined) ?? null);
+          setLoading(false);
+        },
+        (err) => {
+          console.warn('Could not load user profile', err);
+          setLoading(false);
+        },
+      );
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeUser?.();
+      unsubscribeAuth();
+    };
   }, []);
 
-  return {
-    goerId,
-    username,
-    loading,
-  };
+  const isAdmin = role === 'admin' || (!!email && ADMIN_EMAILS.includes(email.toLowerCase()));
+
+  return { goerId, username, email, role, isAdmin, loading };
 }
