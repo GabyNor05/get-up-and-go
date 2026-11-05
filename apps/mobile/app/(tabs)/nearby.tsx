@@ -190,7 +190,7 @@ export default function NearbyScreen({
         contentContainerStyle={{ paddingBottom: 100 }}
       >
         <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
-          <Text style={{ fontFamily: "ADayWithoutSun", fontSize: 26, color: text, marginBottom: 14 }}>
+          <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: 26, color: text, marginBottom: 14 }}>
             Happening Nearby
           </Text>
 
@@ -335,7 +335,7 @@ function Row({
   return (
     <View style={{ paddingHorizontal: 24, marginTop: 22 }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
-        <Text style={{ fontFamily: "ADayWithoutSun", fontSize: 19, color: text }}>
+        <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: 19, color: text }}>
           {title}
         </Text>
         <Pressable onPress={() => onSeeAll?.(section)}>

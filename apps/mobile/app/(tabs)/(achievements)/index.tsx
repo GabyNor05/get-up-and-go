@@ -1,288 +1,321 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  Animated,
-  Easing,
-  Alert,
-  Dimensions,
-} from "react-native";
-import { Award, Gift, Sparkles, Bell, Check, Lock } from "lucide-react-native";
-import { useAppTheme } from "@/hooks/useAppTheme";
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { CheckCircle2, Lock, MapPinned, QrCode, Star } from 'lucide-react-native';
 
-const { width } = Dimensions.get("window");
+import { Header } from '@/components/textFormating';
+import { ProgressRing } from '@/components/gopoints/ProgressRing';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { useGoer } from '@/hooks/useGoer';
+import { useGoPoints } from '@/hooks/useGoPoints';
+import { db } from '../../../../../packages/firebase/src/config/firebase';
+import { CHECK_IN_GP } from '../../../../../packages/firebase/src/services/happeningService';
+import type { Happening } from '../../../../../packages/firebase/src/types/happening';
+import { fonts, radius, shadows } from '../../../../../packages/shared-ui/tokens';
 
-export default function RewardsComingSoonScreen() {
-  const { isDark: darkMode } = useAppTheme();
-  const [notified, setNotified] = useState(false);
+const LEVEL_TITLES_FALLBACK = ['Starter', 'Explorer', 'Regular', 'Trailblazer', 'Local Legend'];
 
-  // Floating animation for the central badge
-  const floatAnim = React.useRef(new Animated.Value(0)).current;
+function formatDate(happening: Happening): string {
+  const date = happening.dateTime?.toDate?.();
+  return date ? date.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' }) : '';
+}
 
-  React.useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: -10,
-          duration: 1800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 1800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [floatAnim]);
+export default function GoPointsScreen() {
+  const router = useRouter();
+  const { t } = useAppTheme();
+  const { goerId } = useGoer();
+  const gp = useGoPoints(goerId);
+  const [checkIns, setCheckIns] = useState<Happening[]>([]);
+  const [loadingCheckIns, setLoadingCheckIns] = useState(true);
 
-  const handleNotifyMe = () => {
-    setNotified(!notified);
-    if (!notified) {
-      Alert.alert(
-        "You're on the list! 🎉",
-        "We'll notify you as soon as the Rewards program goes live."
-      );
+  useEffect(() => {
+    if (!goerId) {
+      setLoadingCheckIns(false);
+      return;
     }
-  };
+    const load = async () => {
+      try {
+        const q = query(collection(db, 'happenings'), where('attendees', 'array-contains', goerId));
+        const snapshot = await getDocs(q);
+        const list = snapshot.docs
+          .map((d) => ({ id: d.id, ...(d.data() as Omit<Happening, 'id'>) }))
+          .sort((a, b) => (b.dateTime?.toMillis?.() ?? 0) - (a.dateTime?.toMillis?.() ?? 0));
+        setCheckIns(list);
+      } catch (err) {
+        console.warn('Could not load check-ins', err);
+      } finally {
+        setLoadingCheckIns(false);
+      }
+    };
+    load();
+  }, [goerId, gp.totalGp]);
 
-  const bg =  "#FAF8F0";
-  const text =  "#24221B";
-  const muted = "#605E55";
-  const cardBg =  "#ffffff";
-  const border = "rgba(36,34,27,0.08)";
+  const level = gp.currentLevel;
+  const levelNumber = level?.level ?? 1;
 
   return (
-    <View style={[styles.container, { backgroundColor: bg }]}>
-      {/* Background Subtle Glowing Accent */}
-      <View style={styles.glowAccent} />
+    <View style={[styles.screen, { backgroundColor: t.bgCanvas }]}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Header pageHeader="Go-Points" subHeading="Show up, check in, level up." />
 
-      {/* Floating Hero Icon Stack */}
-      <Animated.View
-        style={[
-          styles.iconContainer,
-          { transform: [{ translateY: floatAnim }] },
-        ]}
-      >
-        <View style={styles.mainBadge}>
-          <Award size={48} color="#FAF8F0" />
+        {/* Level card */}
+        <View style={[styles.levelCard, shadows.card, { backgroundColor: t.bgSurface, borderColor: t.borderSubtle }]}>
+          {gp.loading ? (
+            <ActivityIndicator color={t.textBrand} />
+          ) : (
+            <>
+              <ProgressRing progress={gp.progress} size={132} strokeWidth={12} label={`${gp.totalGp}`} caption="total GP" />
+              <Text style={[styles.levelTitle, { color: t.textPrimary }]}>
+                Level {levelNumber} · {level?.title ?? LEVEL_TITLES_FALLBACK[0]}
+              </Text>
+              <Text style={[styles.body, styles.center, { color: t.textSecondary }]}>
+                {gp.nextLevel
+                  ? `${gp.gpToNext} GP to reach ${gp.nextLevel.title}`
+                  : "You've reached the top level. Legend!"}
+              </Text>
+              <View style={[styles.bar, { backgroundColor: t.fillProgressSubtle }]}>
+                <View style={[styles.barFill, { width: `${gp.progress * 100}%`, backgroundColor: t.actionSecondary }]} />
+              </View>
+            </>
+          )}
         </View>
 
-        {/* Decorative Surrounding Mini-Badges */}
-        <View style={[styles.miniBadge, styles.miniBadgeLeft]}>
-          <Gift size={16} color="#FAF8F0" />
-        </View>
-        <View style={[styles.miniBadge, styles.miniBadgeRight]}>
-          <Sparkles size={16} color="#FAF8F0" />
-        </View>
-      </Animated.View>
-
-      {/* Main Copy */}
-      <View style={styles.textStack}>
-        <View style={styles.tag}>
-          <Lock size={12} color="#A88AED" style={{ marginRight: 4 }} />
-          <Text style={styles.tagText}>UNDER DEVELOPMENT</Text>
+        {/* Stats */}
+        <View style={styles.statsRow}>
+          <View style={[styles.stat, { backgroundColor: t.fillProgressSubtle }]}>
+            <Star size={18} color={t.textProgress} />
+            <Text style={[styles.statValue, { color: t.textPrimary }]}>{gp.monthlyGp}</Text>
+            <Text style={[styles.caption, { color: t.textSecondary }]}>GP this month</Text>
+          </View>
+          <View style={[styles.stat, { backgroundColor: t.fillBrandSubtle }]}>
+            <CheckCircle2 size={18} color={t.textBrand} />
+            <Text style={[styles.statValue, { color: t.textPrimary }]}>{checkIns.length}</Text>
+            <Text style={[styles.caption, { color: t.textSecondary }]}>Check-ins</Text>
+          </View>
         </View>
 
-        <Text style={[styles.title, { color: text }]}>
-          Rewards are on the Way!
-        </Text>
-        <Text style={[styles.subtitle, { color: muted }]}>
-          Earn badges, unlock perks, and level up your status every time you check in at local happenings.
-        </Text>
-      </View>
+        {/* How to earn */}
+        <Pressable
+          onPress={() => router.navigate('/(tabs)/nearby')}
+          style={[styles.earn, { backgroundColor: t.actionPrimary }]}
+        >
+          <QrCode size={22} color={t.onActionPrimary} />
+          <View style={styles.flex}>
+            <Text style={[styles.earnTitle, { color: t.onActionPrimary }]}>+{CHECK_IN_GP} GP per check-in</Text>
+            <Text style={[styles.caption, { color: t.onActionPrimary }]}>Find a Happening and scan the venue QR</Text>
+          </View>
+          <MapPinned size={20} color={t.onActionPrimary} />
+        </Pressable>
 
-      {/* Teaser Preview Card */}
-      <View
-        style={[
-          styles.previewCard,
-          { backgroundColor: cardBg, borderColor: border },
-        ]}
-      >
-        <View style={styles.previewHeader}>
-          <Text style={[styles.previewTitle, { color: text }]}>
-            Upcoming Rewards Progress
-          </Text>
-          <Text style={styles.previewBadge}>Level 1</Text>
+        {/* Level ladder */}
+        <Text style={[styles.sectionTitle, { color: t.textPrimary }]}>Levels</Text>
+        <View style={[styles.card, { backgroundColor: t.bgSurface, borderColor: t.borderSubtle }]}>
+          {LEVEL_TITLES_FALLBACK.map((fallbackTitle, index) => {
+            const number = index + 1;
+            const reached = number <= levelNumber;
+            const isCurrent = number === levelNumber;
+            return (
+              <View
+                key={fallbackTitle}
+                style={[styles.levelRow, index < 4 && { borderBottomWidth: 1, borderBottomColor: t.borderSubtle }]}
+              >
+                <View
+                  style={[
+                    styles.levelBadge,
+                    { backgroundColor: reached ? t.actionSecondary : t.bgElevated, borderColor: t.borderSubtle },
+                  ]}
+                >
+                  {reached ? (
+                    <Text style={[styles.levelBadgeText, { color: t.onActionSecondary }]}>{number}</Text>
+                  ) : (
+                    <Lock size={14} color={t.textSecondary} />
+                  )}
+                </View>
+                <Text style={[styles.levelName, { color: reached ? t.textPrimary : t.textSecondary }]}>
+                  {fallbackTitle}
+                </Text>
+                {isCurrent ? (
+                  <View style={[styles.currentChip, { backgroundColor: t.fillBrandSubtle }]}>
+                    <Text style={[styles.currentText, { color: t.textBrand }]}>You're here</Text>
+                  </View>
+                ) : null}
+              </View>
+            );
+          })}
         </View>
 
-        <View style={styles.progressBarBg}>
-          <View style={styles.progressBarFill} />
+        {/* Recent check-ins */}
+        <Text style={[styles.sectionTitle, { color: t.textPrimary }]}>Recent check-ins</Text>
+        <View style={[styles.card, { backgroundColor: t.bgSurface, borderColor: t.borderSubtle }]}>
+          {loadingCheckIns ? (
+            <ActivityIndicator color={t.textBrand} style={styles.loader} />
+          ) : checkIns.length === 0 ? (
+            <Text style={[styles.body, styles.padded, { color: t.textSecondary }]}>
+              No check-ins yet. Your first one is worth {CHECK_IN_GP} GP!
+            </Text>
+          ) : (
+            checkIns.slice(0, 5).map((happening, index) => (
+              <View
+                key={happening.id}
+                style={[
+                  styles.checkInRow,
+                  index < Math.min(checkIns.length, 5) - 1 && { borderBottomWidth: 1, borderBottomColor: t.borderSubtle },
+                ]}
+              >
+                <CheckCircle2 size={20} color={t.textProgress} />
+                <View style={styles.flex}>
+                  <Text numberOfLines={1} style={[styles.checkInTitle, { color: t.textPrimary }]}>
+                    {happening.title}
+                  </Text>
+                  <Text style={[styles.caption, { color: t.textSecondary }]}>{formatDate(happening)}</Text>
+                </View>
+                <Text style={[styles.gpEarned, { color: t.textProgress }]}>+{CHECK_IN_GP}</Text>
+              </View>
+            ))
+          )}
         </View>
-
-        <View style={styles.previewFooter}>
-          <Text style={[styles.previewFooterText, { color: muted }]}>
-            0 / 100 XP to First Perk
-          </Text>
-          <Text style={[styles.previewFooterText, { color: "#A6C261" }]}>
-            Coming Soon
-          </Text>
-        </View>
-      </View>
-
-      
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 28,
   },
-  glowAccent: {
-    position: "absolute",
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: "rgba(168,138,237,0.12)",
-    top: "20%",
+  content: {
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+    gap: 16,
   },
-  iconContainer: {
-    width: 100,
-    height: 100,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 28,
+  levelCard: {
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    padding: 24,
+    marginTop: 8,
   },
-  mainBadge: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: "#A88AED",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#A88AED",
-    shadowOpacity: 0.45,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 10,
+  levelTitle: {
+    fontFamily: fonts.display,
+    fontSize: 24,
+    lineHeight: 28,
+    marginTop: 8,
   },
-  miniBadge: {
-    position: "absolute",
+  body: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  center: {
+    textAlign: 'center',
+  },
+  padded: {
+    paddingVertical: 12,
+  },
+  bar: {
+    width: '100%',
+    height: 10,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+    marginTop: 8,
+  },
+  barFill: {
+    height: '100%',
+    borderRadius: radius.pill,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  stat: {
+    flex: 1,
+    borderRadius: radius.lg,
+    padding: 16,
+    gap: 4,
+  },
+  statValue: {
+    fontFamily: fonts.display,
+    fontSize: 28,
+    lineHeight: 32,
+  },
+  caption: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  earn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: radius.lg,
+    padding: 16,
+  },
+  earnTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  flex: {
+    flex: 1,
+  },
+  sectionTitle: {
+    fontFamily: fonts.display,
+    fontSize: 20,
+    lineHeight: 24,
+    marginTop: 8,
+  },
+  card: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+  },
+  loader: {
+    paddingVertical: 16,
+  },
+  levelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+  },
+  levelBadge: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 4,
-  },
-  miniBadgeLeft: {
-    backgroundColor: "#A6C261",
-    top: -4,
-    left: -4,
-  },
-  miniBadgeRight: {
-    backgroundColor: "#E59866",
-    bottom: -4,
-    right: -4,
-  },
-  textStack: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  tag: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(168,138,237,0.15)",
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 100,
-    marginBottom: 14,
-  },
-  tagText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#A88AED",
-    letterSpacing: 0.5,
-  },
-  title: {
-    fontFamily: "ADayWithoutSun",
-    fontSize: 24,
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 22,
-    textAlign: "center",
-    paddingHorizontal: 8,
-  },
-  previewCard: {
-    width: width - 56,
-    padding: 18,
-    borderRadius: 20,
     borderWidth: 1,
-    marginBottom: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  previewHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  previewTitle: {
+  levelBadgeText: {
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: '700',
   },
-  previewBadge: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#A88AED",
-    backgroundColor: "rgba(168,138,237,0.18)",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  progressBarBg: {
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "rgba(160,160,160,0.2)",
-    overflow: "hidden",
-    marginBottom: 10,
-  },
-  progressBarFill: {
-    width: "35%",
-    height: "100%",
-    backgroundColor: "#A88AED",
-    borderRadius: 5,
-  },
-  previewFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  previewFooterText: {
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  notifyBtn: {
-    width: width - 56,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: "#A88AED",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    shadowColor: "#A88AED",
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
-  },
-  notifyBtnActive: {
-    backgroundColor: "#A6C261",
-    shadowColor: "#A6C261",
-  },
-  notifyBtnText: {
-    color: "#FAF8F0",
+  levelName: {
+    flex: 1,
     fontSize: 15,
-    fontWeight: "700",
+    fontWeight: '600',
+  },
+  currentChip: {
+    borderRadius: radius.pill,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  currentText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  checkInRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+  },
+  checkInTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  gpEarned: {
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

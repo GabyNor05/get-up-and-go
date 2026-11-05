@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { useAppTheme } from '@/hooks/useAppTheme';
+import { configureNotifications } from '@/utils/notifications';
 
 // Firebase Auth expects DOMException, which Hermes doesn't provide.
 if (typeof globalThis.DOMException === 'undefined') {
@@ -22,6 +23,8 @@ if (typeof globalThis.DOMException === 'undefined') {
   }
   (globalThis as { DOMException?: unknown }).DOMException = DOMExceptionPolyfill;
 }
+
+configureNotifications();
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* already hidden — safe to ignore */
@@ -42,8 +45,8 @@ function RootStack() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    ADayWithoutSun: require('../../../packages/shared-ui/assets/fonts/A-Day-Without-Sun-Text-Bold-TRIAL.ttf'),
-    'ADayWithoutSun-Regular': require('../../../packages/shared-ui/assets/fonts/A-Day-Without-Sun-Text-Regular-TRIAL.ttf'),
+    'Fredoka-SemiBold': require('../assets/fonts/Fredoka-SemiBold.ttf'),
+    'Fredoka-Medium': require('../assets/fonts/Fredoka-Medium.ttf'),
   });
 
   useEffect(() => {

@@ -99,7 +99,7 @@ export default function SeeAllScreen({
         </Pressable>
         <Text
           style={{
-            fontFamily: "ADayWithoutSun",
+            fontFamily: "Fredoka-SemiBold",
             fontSize: 20,
             color: text,
           }}

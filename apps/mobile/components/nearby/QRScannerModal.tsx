@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal, View, Text, Pressable, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { X } from "lucide-react-native";
@@ -14,6 +14,14 @@ export default function QRScannerModal({ visible, happeningTitle, onClose, onSuc
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Each time the scanner opens, it should be ready to scan again
+  useEffect(() => {
+    if (visible) {
+      setScanned(false);
+      setLoading(false);
+    }
+  }, [visible]);
 
   if (!visible) return null;
 

@@ -10,7 +10,9 @@ import {
   StyleSheet,
   Alert,
   Share,
+  ActivityIndicator,
 } from "react-native";
+import { useRouter } from "expo-router";
 import {
   User as UserIcon,
   Bell,
@@ -24,28 +26,35 @@ import {
   X,
   Sliders,
   ShieldCheck,
+  Database,
+  Wand2,
 } from "lucide-react-native";
 import { getAuth, signOut } from "firebase/auth";
 import { useGoer } from "../../../hooks/useGoer";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { useGoPoints } from "@/hooks/useGoPoints";
+import { Avatar } from "@/components/ui/Avatar";
+import { seedDemoData } from "@/scripts/seedDemoData";
+import { EditProfilePanel } from "@/components/settings/EditProfilePanel";
+import { PreferencesPanel } from "@/components/settings/PreferencesPanel";
+import { PrivacyPanel } from "@/components/settings/PrivacyPanel";
+import { HelpPanel } from "@/components/settings/HelpPanel";
+import { DemoGeneratorPanel } from "@/components/settings/DemoGeneratorPanel";
 
-interface Props {
-  onNavigateDev?: () => void;
-}
 
-type DrawerType = "edit_profile" | "preferences" | "privacy" | "help" | null;
+type DrawerType = "edit_profile" | "preferences" | "privacy" | "help" | "demo" | null;
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
-export default function SettingsScreen({ onNavigateDev }: Props) {
+export default function SettingsScreen() {
+  const router = useRouter();
+  const [seeding, setSeeding] = useState(false);
   const { isDark: darkMode, t, setPreference } = useAppTheme();
-  const { goerId, username } = useGoer();
+  const { goerId, username, email, isAdmin } = useGoer();
+  // Live goers doc, so a new avatar from Edit Profile shows straight away
+  const { goer } = useGoPoints(goerId);
   const [activeDrawer, setActiveDrawer] = useState<DrawerType>(null);
 
-  // Settings Toggles State
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [hideEmail, setHideEmail] = useState(false);
-  const [locationSharing, setLocationSharing] = useState(true);
 
   // Side Drawer Slide Animation
   const drawerAnim = useRef(new Animated.Value(SCREEN_WIDTH)).current;
@@ -72,8 +81,25 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
   const handleLogout = async () => {
     try {
       await signOut(getAuth());
+      router.replace("/(auth)");
     } catch (err) {
       Alert.alert("Logout Error", "Failed to sign out cleanly.");
+    }
+  };
+
+  const handleSeed = async () => {
+    setSeeding(true);
+    try {
+      const result = await seedDemoData(goerId);
+      Alert.alert(
+        "Demo data added",
+        `${result.happenings} Happenings, ${result.circles} Circles, ${result.goers} demo Goers and ${result.levels} levels.`,
+      );
+    } catch (err) {
+      console.error("Seeding failed", err);
+      Alert.alert("Couldn't add demo data", "Check your connection and Firestore rules, then try again.");
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -108,10 +134,8 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
           ]}
         >
           <View style={styles.profileHeader}>
-            <View style={[styles.avatar, { backgroundColor: t.actionPrimary }]}>
-              <Text style={[styles.avatarText, { color: t.onActionPrimary }]}>
-                {username ? username.charAt(0).toUpperCase() : "G"}
-              </Text>
+            <View style={styles.avatar}>
+              <Avatar name={username || "G"} avatarPublicId={goer?.avatarPublicId} size={60} />
             </View>
             <View style={{ flex: 1 }}>
               <View style={styles.nameBadgeRow}>
@@ -133,11 +157,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
           <View style={styles.actionRow}>
             <Pressable
               onPress={() => openDrawer("edit_profile")}
-              style={({ pressed }) => [
-                styles.actionBtn,
-                { backgroundColor: chipBg },
-                pressed && { opacity: 0.75 },
-              ]}
+              style={[styles.actionBtn, { backgroundColor: chipBg }]}
             >
               <Pencil size={14} color={accent} />
               <Text style={[styles.actionBtnText, { color: accent }]}>
@@ -147,11 +167,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
 
             <Pressable
               onPress={handleShareProfile}
-              style={({ pressed }) => [
-                styles.actionBtn,
-                { backgroundColor: chipBg },
-                pressed && { opacity: 0.75 },
-              ]}
+              style={[styles.actionBtn, { backgroundColor: chipBg }]}
             >
               <Share2 size={14} color={accent} />
               <Text style={[styles.actionBtnText, { color: accent }]}>
@@ -195,11 +211,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
         >
           <Pressable
             onPress={() => openDrawer("preferences")}
-            style={({ pressed }) => [
-              styles.rowItem,
-              pressed && styles.pressed,
-              { borderBottomWidth: 1, borderColor: border },
-            ]}
+            style={[styles.rowItem, { borderBottomWidth: 1, borderColor: border }]}
           >
             <View style={styles.rowLeft}>
               <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
@@ -214,11 +226,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
 
           <Pressable
             onPress={() => openDrawer("privacy")}
-            style={({ pressed }) => [
-              styles.rowItem,
-              pressed && styles.pressed,
-              { borderBottomWidth: 1, borderColor: border },
-            ]}
+            style={[styles.rowItem, { borderBottomWidth: 1, borderColor: border }]}
           >
             <View style={styles.rowLeft}>
               <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
@@ -233,7 +241,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
 
           <Pressable
             onPress={() => openDrawer("help")}
-            style={({ pressed }) => [styles.rowItem, pressed && styles.pressed]}
+            style={[styles.rowItem]}
           >
             <View style={styles.rowLeft}>
               <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
@@ -247,30 +255,48 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
           </Pressable>
         </View>
 
-        {/* Developer Portal Option */}
-        {onNavigateDev && (
-          <View
-            style={[
-              styles.cardGroup,
-              { backgroundColor: surface, borderColor: border },
-            ]}
-          >
+        {/* Developer tools — only in development builds / Expo Go */}
+        {isAdmin && (
+          <View style={[styles.cardGroup, { backgroundColor: surface, borderColor: border }]}>
             <Pressable
-              onPress={onNavigateDev}
-              style={({ pressed }) => [
-                styles.rowItem,
-                pressed && styles.pressed,
-              ]}
+              onPress={handleSeed}
+              disabled={seeding}
+              style={[styles.rowItem, { borderBottomWidth: 1, borderColor: border }]}
             >
+              <View style={styles.rowLeft}>
+                <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
+                  <Database size={16} color={accent} />
+                </View>
+                <View>
+                  <Text style={[styles.rowLabel, { color: textPrimary }]}>Seed demo data</Text>
+                  <Text style={{ fontSize: 12, color: muted }}>Happenings, Circles, levels</Text>
+                </View>
+              </View>
+              {seeding ? <ActivityIndicator color={accent} /> : <ChevronRight size={18} color={muted} />}
+            </Pressable>
+            <Pressable
+              onPress={() => openDrawer("demo")}
+              style={[styles.rowItem, { borderBottomWidth: 1, borderColor: border }]}
+            >
+              <View style={styles.rowLeft}>
+                <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
+                  <Wand2 size={16} color={accent} />
+                </View>
+                <View>
+                  <Text style={[styles.rowLabel, { color: textPrimary }]}>Generate demo Happenings</Text>
+                  <Text style={{ fontSize: 12, color: muted }}>Pick an area, dates and radius</Text>
+                </View>
+              </View>
+              <ChevronRight size={18} color={muted} />
+            </Pressable>
+            <Pressable onPress={() => router.push("/DevHappeningScreen")} style={[styles.rowItem]}>
               <View style={styles.rowLeft}>
                 <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
                   <Code2 size={16} color={accent} />
                 </View>
-                <Text style={[styles.rowLabel, { color: accent, fontWeight: "600" }]}>
-                  Dev Portal & QR Generator
-                </Text>
+                <Text style={[styles.rowLabel, { color: textPrimary }]}>Dev QR tools</Text>
               </View>
-              <ChevronRight size={18} color={accent} />
+              <ChevronRight size={18} color={muted} />
             </Pressable>
           </View>
         )}
@@ -278,13 +304,10 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
         {/* Logout Button */}
         <Pressable
           onPress={handleLogout}
-          style={({ pressed }) => [
-            styles.logoutBtn,
-            pressed && { opacity: 0.8 },
-          ]}
+          style={[styles.logoutBtn, { backgroundColor: t.fillDangerSubtle, borderColor: t.danger }]}
         >
-          <LogOut size={16} color="#E8786C" />
-          <Text style={styles.logoutText}>Logout</Text>
+          <LogOut size={16} color={t.danger} />
+          <Text style={[styles.logoutText, { color: t.danger }]}>Log out</Text>
         </Pressable>
       </ScrollView>
 
@@ -309,77 +332,21 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
                 {activeDrawer === "preferences" && "Preferences"}
                 {activeDrawer === "privacy" && "Privacy & Security"}
                 {activeDrawer === "help" && "Help & Support"}
+                {activeDrawer === "demo" && "Demo Happenings"}
               </Text>
               <Pressable onPress={closeDrawer} hitSlop={10}>
                 <X size={20} color={textPrimary} />
               </Pressable>
             </View>
 
-            <ScrollView contentContainerStyle={{ padding: 20 }}>
-              {activeDrawer === "preferences" && (
-                <View style={{ gap: 20 }}>
-                  <View style={styles.toggleRow}>
-                    <View style={{ flex: 1, paddingRight: 12 }}>
-                      <Text style={[styles.toggleLabel, { color: textPrimary }]}>
-                        Push Notifications
-                      </Text>
-                      <Text style={{ fontSize: 12, color: muted, marginTop: 2 }}>
-                        Receive alerts for nearby happenings
-                      </Text>
-                    </View>
-                    <Switch
-                      value={pushNotifications}
-                      onValueChange={setPushNotifications}
-                      trackColor={{ false: t.borderSubtle, true: t.actionPrimary }}
-                      thumbColor="#FAF8F0"
-                    />
-                  </View>
-                </View>
+            <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 48 }} keyboardShouldPersistTaps="handled">
+              {activeDrawer === "edit_profile" && goerId && (
+                <EditProfilePanel goerId={goerId} username={username} onSaved={closeDrawer} />
               )}
-
-              {activeDrawer === "privacy" && (
-                <View style={{ gap: 20 }}>
-                  <View style={styles.toggleRow}>
-                    <View style={{ flex: 1, paddingRight: 12 }}>
-                      <Text style={[styles.toggleLabel, { color: textPrimary }]}>
-                        Hide Email Address
-                      </Text>
-                      <Text style={{ fontSize: 12, color: muted, marginTop: 2 }}>
-                        Keep email address hidden from public profile
-                      </Text>
-                    </View>
-                    <Switch
-                      value={hideEmail}
-                      onValueChange={setHideEmail}
-                      trackColor={{ false: t.borderSubtle, true: t.actionPrimary }}
-                      thumbColor="#FAF8F0"
-                    />
-                  </View>
-
-                  <View style={styles.toggleRow}>
-                    <View style={{ flex: 1, paddingRight: 12 }}>
-                      <Text style={[styles.toggleLabel, { color: textPrimary }]}>
-                        Location Sharing
-                      </Text>
-                      <Text style={{ fontSize: 12, color: muted, marginTop: 2 }}>
-                        Share coarse location for nearby happenings
-                      </Text>
-                    </View>
-                    <Switch
-                      value={locationSharing}
-                      onValueChange={setLocationSharing}
-                      trackColor={{ false: t.borderSubtle, true: t.actionPrimary }}
-                      thumbColor="#FAF8F0"
-                    />
-                  </View>
-                </View>
-              )}
-
-              {(activeDrawer === "edit_profile" || activeDrawer === "help") && (
-                <Text style={{ color: muted, fontSize: 14 }}>
-                  Section options coming soon...
-                </Text>
-              )}
+              {activeDrawer === "preferences" && <PreferencesPanel />}
+              {activeDrawer === "privacy" && goerId && <PrivacyPanel goerId={goerId} email={email} />}
+              {activeDrawer === "help" && <HelpPanel />}
+              {activeDrawer === "demo" && isAdmin && <DemoGeneratorPanel />}
             </ScrollView>
           </Animated.View>
         </View>
@@ -394,11 +361,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingTop: 56,
+    paddingTop: 16,
     paddingBottom: 120,
   },
   headerTitle: {
-    fontFamily: "ADayWithoutSun",
+    fontFamily: "Fredoka-SemiBold",
     fontSize: 28,
     marginBottom: 20,
   },
