@@ -34,10 +34,8 @@ export default function DevHappeningScreen() {
 
     setLoading(true);
     try {
-      const parsedPartnerId = parseInt(partnerId, 10);
-
       const newId = await happeningService.createHappening({
-        partner_id: isNaN(parsedPartnerId) ? 101 : parsedPartnerId,
+        partner_id: partnerId.trim(),
         title,
         description,
         locationName,

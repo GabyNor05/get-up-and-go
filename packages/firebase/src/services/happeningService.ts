@@ -5,6 +5,7 @@ import {
   getDocs,
   addDoc,
   updateDoc,
+  deleteDoc,
   arrayUnion,
   arrayRemove,
   query,
@@ -14,7 +15,7 @@ import {
   QueryConstraint,
 } from "firebase/firestore";
 import { db } from "../config/firebase"; 
-import { Happening, HappeningCategory } from "../types/happening";
+import { Happening, HappeningCategory, HappeningUpdate } from "../types/happening";
 
 const COLLECTION_NAME = "happenings";
 
@@ -60,12 +61,13 @@ export const happeningService = {
       const data = docSnap.data();
 
       let distanceKm = 0;
-      if (userLocation && data.location?.latitude && data.location?.longitude) {
+      const coords = data.coordinates;
+      if (userLocation && coords?.latitude !== undefined && coords?.longitude !== undefined) {
         distanceKm = calculateDistanceKm(
           userLocation.latitude,
           userLocation.longitude,
-          data.location.latitude,
-          data.location.longitude
+          coords.latitude,
+          coords.longitude
         );
       }
 
@@ -139,5 +141,32 @@ export const happeningService = {
   async createHappening(data: Omit<Happening, "id">): Promise<string> {
     const docRef = await addDoc(collection(db, COLLECTION_NAME), data);
     return docRef.id;
+  },
+
+  /**
+   * Update the editable fields of a happening (portal)
+   */
+  async updateHappening(id: string, updates: HappeningUpdate): Promise<void> {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(docRef, updates);
+  },
+
+  /**
+   * Delete a happening (portal)
+   */
+  async deleteHappening(id: string): Promise<void> {
+    await deleteDoc(doc(db, COLLECTION_NAME, id));
+  },
+
+  /**
+   * All happenings owned by one partner, soonest first.
+   * Sorted on the client so no composite Firestore index is needed.
+   */
+  async getHappeningsByPartner(partnerId: string): Promise<Happening[]> {
+    const q = query(collection(db, COLLECTION_NAME), where("partner_id", "==", partnerId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs
+      .map((d) => ({ id: d.id, ...d.data() } as Happening))
+      .sort((a, b) => a.dateTime.toMillis() - b.dateTime.toMillis());
   },
 };
