@@ -22,6 +22,7 @@ import { useGoer } from "../../hooks/useGoer"; // Adjust path as needed
 import QRScannerModal from "./QRScannerModal";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { circleFeedService } from "../../../../packages/firebase/src/services/circleFeedService";
+import { cancelHappeningReminder, scheduleHappeningReminder } from "@/utils/notifications";
 
 interface Props {
   darkMode: boolean;
@@ -120,6 +121,10 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
     try {
       await happeningService.toggleRsvp(event.id, goerId, going);
       if (nextState) {
+        const startsAt = event.dateTime?.toDate?.();
+        if (startsAt) {
+          scheduleHappeningReminder({ id: event.id, title: event.title, locationName: event.locationName, startsAt });
+        }
         circleFeedService.postToMyCircles({
           goerUid: goerId,
           username,
@@ -127,6 +132,8 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
           happeningId: event.id,
           happeningTitle: event.title,
         });
+      } else {
+        cancelHappeningReminder(event.id);
       }
     } catch (err) {
       setGoing(going);
