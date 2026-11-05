@@ -117,7 +117,7 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
           </View>
           <Text
             style={{
-              fontFamily: "ADayWithoutSun",
+              fontFamily: "Fredoka-SemiBold",
               fontSize: 30,
               color: text,
               lineHeight: 34.5,

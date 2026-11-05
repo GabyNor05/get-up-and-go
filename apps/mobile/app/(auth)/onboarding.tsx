@@ -203,7 +203,7 @@ export default function OnboardingScreen({
       >
         <Text
           style={{
-            fontFamily: "ADayWithoutSun",
+            fontFamily: "Fredoka-SemiBold",
             fontSize: 36,
             color: text,
             lineHeight: 40,

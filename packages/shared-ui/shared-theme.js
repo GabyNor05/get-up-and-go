@@ -67,7 +67,7 @@ const semantic = {
 };
 
 const fonts = {
-  display: 'ADayWithoutSun',
+  display: 'Fredoka-SemiBold',
   body: 'Arial',
 };
 

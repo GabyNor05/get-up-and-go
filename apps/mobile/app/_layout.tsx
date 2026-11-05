@@ -42,8 +42,8 @@ function RootStack() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    ADayWithoutSun: require('../../../packages/shared-ui/assets/fonts/A-Day-Without-Sun-Text-Bold-TRIAL.ttf'),
-    'ADayWithoutSun-Regular': require('../../../packages/shared-ui/assets/fonts/A-Day-Without-Sun-Text-Regular-TRIAL.ttf'),
+    'Fredoka-SemiBold': require('../../../packages/shared-ui/assets/fonts/Fredoka-SemiBold.ttf'),
+    'Fredoka-Medium': require('../../../packages/shared-ui/assets/fonts/Fredoka-Medium.ttf'),
   });
 
   useEffect(() => {

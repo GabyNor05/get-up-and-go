@@ -27,6 +27,7 @@ export function CircleCard({ circle, variant, onPress }: CircleCardProps) {
       accessibilityLabel={`Open ${circle.title}`}
       style={[
         styles.card,
+        !isWide && styles.fill,
         isTall && styles.tall,
         isWide && styles.wide,
         { backgroundColor: cardBg ?? t.bgSurface, borderColor: t.borderSubtle },
@@ -74,6 +75,10 @@ const styles = StyleSheet.create({
     padding: 16,
     overflow: 'hidden',
     gap: 12,
+  },
+  // Tall and stacked cards stretch so both bento columns end on the same line
+  fill: {
+    flex: 1,
   },
   tall: {
     minHeight: 312,

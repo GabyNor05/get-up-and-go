@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   headerTitle: {
-    fontFamily: "ADayWithoutSun",
+    fontFamily: "Fredoka-SemiBold",
     fontSize: 28,
     marginBottom: 20,
   },

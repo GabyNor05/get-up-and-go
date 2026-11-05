@@ -96,7 +96,7 @@ export default function IndexRedirectScreen() {
         <Animated.View style={{ opacity: logoOpacity, alignItems: "center", marginTop: 24 }}>
           <Text
             style={{
-              fontFamily: "ADayWithoutSun",
+              fontFamily: "Fredoka-SemiBold",
               fontSize: 32,
               color: textColor,
               marginBottom: 6,

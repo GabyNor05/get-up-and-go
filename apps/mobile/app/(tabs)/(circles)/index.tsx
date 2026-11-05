@@ -129,6 +129,7 @@ const styles = StyleSheet.create({
   },
   stack: {
     gap: 12,
+    alignSelf: 'stretch',
   },
   flex: {
     flex: 1,
