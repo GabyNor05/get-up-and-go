@@ -95,10 +95,9 @@ export default function IndexRedirectScreen() {
         {/* Title / Tagline */}
         <Animated.View style={{ opacity: logoOpacity, alignItems: "center", marginTop: 24 }}>
           <Text
-           className="font-heading"
             style={{
-              fontSize: 28,
-              fontWeight: "700",
+              fontFamily: "ADayWithoutSun",
+              fontSize: 32,
               color: textColor,
               marginBottom: 6,
             }}

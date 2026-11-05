@@ -117,8 +117,8 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
           </View>
           <Text
             style={{
+              fontFamily: "ADayWithoutSun",
               fontSize: 30,
-              fontWeight: "700",
               color: text,
               lineHeight: 34.5,
               marginBottom: 10,

@@ -75,6 +75,7 @@ export default function SettingsScreen() {
   const handleLogout = async () => {
     try {
       await signOut(getAuth());
+      router.replace("/(auth)");
     } catch (err) {
       Alert.alert("Logout Error", "Failed to sign out cleanly.");
     }

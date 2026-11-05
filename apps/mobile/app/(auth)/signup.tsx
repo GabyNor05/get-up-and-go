@@ -1,379 +1,367 @@
-import { useState } from "react";
+import { useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
-  ActivityIndicator,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform
-} from "react-native";
-import { Eye, EyeOff, Check } from "lucide-react-native";
-import { useRouter } from "expo-router";
-import { Image } from "expo-image";
-import { authService } from "../../../../packages/firebase/src/services/authService";
-import { Header } from "@/components/textFormating";
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Check, ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 
-const isNewUser = false;
-
-const COLORS = {
-  bg: "#F4F0DD",
-  surface: "#FAF8F0",
-  text: "#24221B",
-  muted: "#605E55",
-  border: "rgba(36,34,27,0.12)",
-  inputBg: "#FFFFFF",
-  primary: "#5B4C9E",
-};
+import { FormField } from '@/components/ui/FormField';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { friendlyAuthError } from '@/utils/authErrors';
+import { authService } from '../../../../packages/firebase/src/services/authService';
+import { fonts, radius } from '../../../../packages/shared-ui/tokens';
 
 const AVATAR_PUBLIC_IDS = [
-  "alghozy-_-uQyXaI9m0-unsplash_jgmzaa",
-  "alghozy-0enEKclXSfw-unsplash_izsp2y",
-  "alghozy-wQ_C9BkbpUM-unsplash_jk9694",
-  "alghozy-y8cri7cZL3k-unsplash_vu2s4f",
-  "alghozy-ILfPLj1DRLE-unsplash_ca2t1o",
-  "alghozy-fABjaBlgYq4-unsplash_yglp8e",
-  "alghozy--Y0bCuZ0-3o-unsplash_yujitr",
-  "alghozy-lZAfGf19Cx0-unsplash_rspjty",
-  "alghozy-YdnvVsFQOHc-unsplash_qnebat",
-  "alghozy-6VKaOoQvHhI-unsplash_xhxnlo",
-  "alghozy-9WGcoIFhxNk-unsplash_vd5xjz",
+  'alghozy-_-uQyXaI9m0-unsplash_jgmzaa',
+  'alghozy-0enEKclXSfw-unsplash_izsp2y',
+  'alghozy-wQ_C9BkbpUM-unsplash_jk9694',
+  'alghozy-y8cri7cZL3k-unsplash_vu2s4f',
+  'alghozy-ILfPLj1DRLE-unsplash_ca2t1o',
+  'alghozy-fABjaBlgYq4-unsplash_yglp8e',
+  'alghozy--Y0bCuZ0-3o-unsplash_yujitr',
+  'alghozy-lZAfGf19Cx0-unsplash_rspjty',
+  'alghozy-YdnvVsFQOHc-unsplash_qnebat',
+  'alghozy-6VKaOoQvHhI-unsplash_xhxnlo',
+  'alghozy-9WGcoIFhxNk-unsplash_vd5xjz',
 ];
 
-function cloudinaryAvatarUrl(publicId: string) {
+const MIN_PASSWORD = 6;
+
+function cloudinaryAvatarUrl(publicId: string): string {
   return `https://res.cloudinary.com/${process.env.EXPO_PUBLIC_CLOUDINARY_NAME}/image/upload/c_fill,g_auto,w_200,h_200,f_auto,q_auto/${publicId}`;
 }
 
+type FieldErrors = Partial<Record<'avatar' | 'username' | 'email' | 'password' | 'confirm', string>>;
+
 export default function SignUpScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { t } = useAppTheme();
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmRef = useRef<TextInput>(null);
 
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [emailTaken, setEmailTaken] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const validate = (): FieldErrors => {
+    const next: FieldErrors = {};
+    if (!selectedAvatar) next.avatar = 'Pick an avatar.';
+    if (!username.trim()) next.username = 'Choose a username.';
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) next.email = 'Enter a valid email.';
+    if (password.length < MIN_PASSWORD) next.password = `At least ${MIN_PASSWORD} characters.`;
+    if (confirm !== password) next.confirm = "Passwords don't match.";
+    return next;
+  };
+
   const handleSignUp = async () => {
-    if (!username.trim()) {
-      alert("Please enter a username.");
-      return;
-    }
+    const nextErrors = validate();
+    setErrors(nextErrors);
+    setFormError(null);
+    setEmailTaken(false);
+    if (Object.keys(nextErrors).length > 0 || !selectedAvatar) return;
 
-    if (!selectedAvatar) {
-      alert("Please select an avatar.");
-      return;
-    }
-
-    if (password !== confirm) {
-      alert("Passwords do not match.");
-      return;
-    }
-
+    setLoading(true);
     try {
-      setLoading(true);
-
-      // Leverages authService to register Auth user, create User doc, generate GoerID, and create Goer doc
       await authService.signUp({
         email: email.trim(),
         password,
         username: username.trim(),
-        role: "goer",
+        role: 'goer',
         avatarPublicId: selectedAvatar,
       });
-
-      router.push("/onboarding");
-    } catch (error: any) {
-      alert(error.message || "Failed to create account.");
+      router.replace('/onboarding');
+    } catch (err) {
+      const code = typeof err === 'object' && err !== null && 'code' in err ? String((err as { code: unknown }).code) : '';
+      setEmailTaken(code === 'auth/email-already-in-use');
+      setFormError(friendlyAuthError(err));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogin = () => {
-    router.push("/login");
-  };
+  const goToLogin = () => (router.canGoBack() ? router.back() : router.replace('/(auth)'));
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      style={[styles.screen, { backgroundColor: t.bgCanvas }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1 }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: COLORS.surface,
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-
-          padding: 24,
-          paddingTop: 32,
-          gap: 20,
-        }}
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View className="my-4">
-          <Header
-            pageHeader="Create account"
-            subHeading="Start exploring what's around you."
-          />
-        </View>
-        {/* Avatar Selector */}
-        <View>
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: "500",
-              color: COLORS.text,
-              opacity: 0.7,
-              marginBottom: 10,
-            }}
-          >
-            Choose your avatar
-          </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 12, paddingVertical: 4 }}
-          >
-            {AVATAR_PUBLIC_IDS.map((id, i) => {
-              const selected = selectedAvatar === id;
-              return (
-                <Pressable
-                  key={`${id}-${i}`}
-                  onPress={() => setSelectedAvatar(id)}
-                  style={{
-                    width: 58,
-                    height: 58,
-                    borderRadius: 29,
-                    overflow: "hidden",
-                    borderWidth: selected ? 3 : 1.5,
-                    borderColor: selected ? COLORS.primary : COLORS.border,
-                    backgroundColor: COLORS.border,
-                  }}
-                >
-                  <Image
-                    source={{ uri: cloudinaryAvatarUrl(id) }}
-                    style={{ width: "100%", height: "100%" }}
-                    contentFit="cover"
-                    transition={200}
-                    cachePolicy="memory-disk"
-                  />
-                  {selected && (
-                    <View
-                      style={{
-                        position: "absolute",
-                        bottom: 2,
-                        right: 2,
-                        width: 18,
-                        height: 18,
-                        borderRadius: 9,
-                        backgroundColor: COLORS.primary,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderWidth: 1.5,
-                        borderColor: COLORS.surface,
-                      }}
-                    >
-                      <Check size={10} color="#fff" />
-                    </View>
-                  )}
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-          {!selectedAvatar && (
-            <Text style={{ fontSize: 11.5, color: COLORS.muted, marginTop: 8 }}>
-              Pick one to continue.
-            </Text>
-          )}
+        <Pressable
+          onPress={goToLogin}
+          accessibilityLabel="Back to log in"
+          style={[styles.iconButton, { backgroundColor: t.bgSurface, borderColor: t.borderSubtle }]}
+        >
+          <ChevronLeft size={22} color={t.textPrimary} />
+        </Pressable>
+
+        <View style={styles.heading}>
+          <Text style={[styles.title, { color: t.textPrimary }]}>Create account</Text>
+          <Text style={[styles.subtitle, { color: t.textSecondary }]}>Start exploring what's around you.</Text>
         </View>
 
-        {/* Input Fields */}
-        <View style={{ gap: 14 }}>
-          <InputField
+        <View style={[styles.card, { backgroundColor: t.bgSurface, borderColor: t.borderSubtle }]}>
+          {/* Avatar picker */}
+          <View style={styles.avatarSection}>
+            <Text style={[styles.label, { color: t.textPrimary }]}>Choose your avatar</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.avatarRow}>
+              {AVATAR_PUBLIC_IDS.map((id) => {
+                const selected = selectedAvatar === id;
+                return (
+                  <Pressable
+                    key={id}
+                    onPress={() => setSelectedAvatar(id)}
+                    accessibilityLabel="Avatar option"
+                    accessibilityState={{ selected }}
+                    style={[
+                      styles.avatar,
+                      { borderColor: selected ? t.focusRing : t.borderSubtle, borderWidth: selected ? 3 : 1.5, backgroundColor: t.fillBrandSubtle },
+                    ]}
+                  >
+                    <Image
+                      source={{ uri: cloudinaryAvatarUrl(id) }}
+                      style={styles.avatarImage}
+                      contentFit="cover"
+                      transition={200}
+                      cachePolicy="memory-disk"
+                    />
+                    {selected ? (
+                      <View style={[styles.avatarCheck, { backgroundColor: t.actionPrimary, borderColor: t.bgSurface }]}>
+                        <Check size={12} color={t.onActionPrimary} />
+                      </View>
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+            {errors.avatar ? <Text style={[styles.inlineError, { color: t.danger }]}>{errors.avatar}</Text> : null}
+          </View>
+
+          <FormField
             label="Username"
             placeholder="choose_a_username"
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="next"
+            onSubmitEditing={() => emailRef.current?.focus()}
+            error={errors.username}
           />
-          <InputField
+          <FormField
+            ref={emailRef}
             label="Email"
             placeholder="you@example.com"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            error={errors.email}
           />
-          <InputField
+          <FormField
+            ref={passwordRef}
             label="Password"
-            placeholder="Create a password"
+            placeholder="At least 6 characters"
             value={password}
             onChangeText={setPassword}
-            secureTextEntry={!showPw}
+            secureTextEntry={!showPassword}
+            autoComplete="new-password"
+            returnKeyType="next"
+            onSubmitEditing={() => confirmRef.current?.focus()}
+            error={errors.password}
             rightSlot={
-              <Pressable onPress={() => setShowPw((v) => !v)} hitSlop={8}>
-                {showPw ? (
-                  <EyeOff size={18} color={COLORS.muted} />
-                ) : (
-                  <Eye size={18} color={COLORS.muted} />
-                )}
+              <Pressable
+                onPress={() => setShowPassword((v) => !v)}
+                hitSlop={12}
+                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={20} color={t.textSecondary} /> : <Eye size={20} color={t.textSecondary} />}
               </Pressable>
             }
           />
-          <InputField
-            label="Confirm Password"
+          <FormField
+            ref={confirmRef}
+            label="Confirm password"
             placeholder="Repeat your password"
             value={confirm}
             onChangeText={setConfirm}
-            secureTextEntry={!showConfirm}
-            rightSlot={
-              <Pressable onPress={() => setShowConfirm((v) => !v)} hitSlop={8}>
-                {showConfirm ? (
-                  <EyeOff size={18} color={COLORS.muted} />
-                ) : (
-                  <Eye size={18} color={COLORS.muted} />
-                )}
-              </Pressable>
-            }
+            secureTextEntry={!showPassword}
+            returnKeyType="done"
+            onSubmitEditing={handleSignUp}
+            error={errors.confirm}
           />
-        </View>
 
-        {/* Submit Button */}
-       <Pressable
-  onPress={handleSignUp}
-  disabled={!selectedAvatar || loading}
-  style={[
-    styles.submitButton,
-    { backgroundColor: selectedAvatar ? "#5B4C9E" : "#E2DFD2" },
-  ]}
->
-  {loading ? (
-    <ActivityIndicator color="#FFFFFF" />
-  ) : (
-    <Text
-      style={{
-        color: selectedAvatar ? "#FFFFFF" : "#605E55",
-        fontSize: 16,
-        fontWeight: "600",
-        letterSpacing: 0.3,
-      }}
-    >
-      Sign Up
-    </Text>
-  )}
-</Pressable>
+          {formError ? (
+            <View style={[styles.errorBox, { backgroundColor: t.fillDangerSubtle }]}>
+              <Text style={[styles.errorText, { color: t.danger }]}>{formError}</Text>
+              {emailTaken ? (
+                <Pressable onPress={goToLogin} hitSlop={8}>
+                  <Text style={[styles.errorLink, { color: t.danger }]}>Go to log in</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null}
 
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "center",
-            marginTop: 4,
-          }}
-        >
-          <Text style={{ fontSize: 14, color: COLORS.muted }}>
-            Already have an account?{" "}
-          </Text>
-          <Pressable onPress={handleLogin}>
-            <Text
-              style={{
-                fontSize: 14,
-                color: COLORS.primary,
-                fontWeight: "600",
-              }}
-            >
-              Log In
-            </Text>
+          <Pressable
+            onPress={handleSignUp}
+            disabled={loading}
+            style={[styles.primary, { backgroundColor: t.actionPrimary, opacity: loading ? 0.7 : 1 }]}
+          >
+            {loading ? (
+              <ActivityIndicator color={t.onActionPrimary} />
+            ) : (
+              <Text style={[styles.primaryText, { color: t.onActionPrimary }]}>Create account</Text>
+            )}
           </Pressable>
         </View>
-      </View>
-    </ScrollView>
+
+        <View style={styles.footer}>
+          <Text style={[styles.footerText, { color: t.textSecondary }]}>Already have an account?</Text>
+          <Pressable onPress={goToLogin} hitSlop={12}>
+            <Text style={[styles.link, { color: t.textBrand }]}>Log in</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-interface InputFieldProps {
-  label: string;
-  placeholder: string;
-  value: string;
-  onChangeText: (v: string) => void;
-  secureTextEntry?: boolean;
-  keyboardType?: "default" | "email-address";
-  autoCapitalize?: "none" | "sentences";
-  rightSlot?: React.ReactNode;
-}
-
-function InputField({
-  label,
-  placeholder,
-  value,
-  onChangeText,
-  secureTextEntry,
-  keyboardType,
-  autoCapitalize,
-  rightSlot,
-}: InputFieldProps) {
-  return (
-    <View style={{ gap: 6 }}>
-      <Text
-        style={{
-          fontSize: 13,
-          fontWeight: "500",
-          color: COLORS.text,
-          opacity: 0.7,
-        }}
-      >
-        {label}
-      </Text>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          backgroundColor: COLORS.inputBg,
-          borderWidth: 1.5,
-          borderColor: COLORS.border,
-          borderRadius: 14,
-        }}
-      >
-        <TextInput
-          placeholder={placeholder}
-          placeholderTextColor={COLORS.muted}
-          value={value}
-          onChangeText={onChangeText}
-          secureTextEntry={secureTextEntry}
-          keyboardType={keyboardType}
-          autoCapitalize={autoCapitalize}
-          style={{
-            flex: 1,
-            paddingVertical: 13,
-            paddingHorizontal: 16,
-            color: COLORS.text,
-            fontSize: 14,
-          }}
-        />
-        {rightSlot && <View style={{ paddingRight: 14 }}>{rightSlot}</View>}
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  submitButton: {
-    width: "100%",
+  screen: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: 16,
+    gap: 20,
+  },
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heading: {
+    gap: 6,
+  },
+  title: {
+    fontFamily: fonts.display,
+    fontSize: 32,
+    lineHeight: 36,
+  },
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  card: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    padding: 20,
+    gap: 16,
+  },
+  avatarSection: {
+    gap: 8,
+  },
+  label: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '700',
+  },
+  avatarRow: {
+    gap: 12,
+    paddingVertical: 4,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarCheck: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inlineError: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  errorBox: {
+    borderRadius: radius.md,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    gap: 4,
+  },
+  errorText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
+  },
+  errorLink: {
+    fontSize: 13,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
+  primary: {
     height: 52,
-    borderRadius: 16,
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 12,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  primaryText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  footerText: {
+    fontSize: 15,
+  },
+  link: {
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

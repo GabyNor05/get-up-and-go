@@ -1,194 +1,216 @@
-import React, { useState } from "react";
+import { useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  Pressable,
-  TextInput,
   ActivityIndicator,
-  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
   StyleSheet,
-} from "react-native";
-import { useRouter } from "expo-router";
-// Adjust relative path to your authService as needed
-import { authService } from "@get-up-and-go/firebase/src/services/authService";
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Eye, EyeOff } from 'lucide-react-native';
 
-const COLORS = {
-  bg: "#F4F0DD",
-  surface: "#FAF8F0",
-  text: "#24221B",
-  muted: "#605E55",
-  border: "rgba(36,34,27,0.12)",
-  inputBg: "#FFFFFF",
-  primary: "#5B4C9E",
-  titleText: "#352C53",
-  buttonBg: "#5B4C9E",
-};
+import AppLogo from '../../../../packages/shared-ui/assets/logos/transparentBgLogo.png';
+import { FormField } from '@/components/ui/FormField';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { friendlyAuthError } from '@/utils/authErrors';
+import { authService } from '../../../../packages/firebase/src/services/authService';
+import { fonts, radius } from '../../../../packages/shared-ui/tokens';
 
-const LoginScreen = () => {
+export default function LoginScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { t } = useAppTheme();
+  const passwordRef = useRef<TextInput>(null);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert("Error", "Please enter both email and password.");
+    if (!email.trim() || !password) {
+      setError('Enter your email and password.');
       return;
     }
-
     setLoading(true);
+    setError(null);
     try {
       await authService.login(email.trim(), password);
-      // Navigate to main tab view on success
-      router.replace("./(tabs)/(home)");
-    } catch (error: any) {
-      const errorMessage = error?.message || "Invalid email or password.";
-      Alert.alert("Login Failed", errorMessage);
+      router.replace('/(tabs)/(home)');
+    } catch (err) {
+      setError(friendlyAuthError(err));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSignUp = () => {
-    router.push("/signup");
-  };
-
-  const handleDevMode =() =>{
-    router.push("/DevHappeningScreen");
-  };
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+    <KeyboardAvoidingView
+      style={[styles.screen, { backgroundColor: t.bgCanvas }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 24 }]}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.brand}>
+          <Image source={AppLogo} style={styles.logo} resizeMode="contain" />
+          <Text style={[styles.title, { color: t.textPrimary }]}>Welcome back</Text>
+          <Text style={[styles.subtitle, { color: t.textSecondary }]}>Log in to see what's happening near you.</Text>
+        </View>
 
-      <View style={styles.formContainer}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            placeholder="Enter your email"
-            style={styles.input}
+        <View style={[styles.card, { backgroundColor: t.bgSurface, borderColor: t.borderSubtle }]}>
+          <FormField
+            label="Email"
+            placeholder="you@example.com"
+            value={email}
+            onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
-            value={email}
-            onChangeText={setEmail}
-            enterKeyHint="next"
+            autoComplete="email"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
           />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            placeholder="Enter your password"
-            style={styles.input}
-            secureTextEntry
+          <FormField
+            ref={passwordRef}
+            label="Password"
+            placeholder="Your password"
             value={password}
             onChangeText={setPassword}
-            enterKeyHint="done"
+            secureTextEntry={!showPassword}
+            autoComplete="password"
+            returnKeyType="done"
             onSubmitEditing={handleLogin}
+            rightSlot={
+              <Pressable
+                onPress={() => setShowPassword((v) => !v)}
+                hitSlop={12}
+                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={20} color={t.textSecondary} /> : <Eye size={20} color={t.textSecondary} />}
+              </Pressable>
+            }
           />
+
+          {error ? (
+            <View style={[styles.errorBox, { backgroundColor: t.fillDangerSubtle }]}>
+              <Text style={[styles.errorText, { color: t.danger }]}>{error}</Text>
+            </View>
+          ) : null}
+
+          <Pressable
+            onPress={handleLogin}
+            disabled={loading}
+            style={[styles.primary, { backgroundColor: t.actionPrimary, opacity: loading ? 0.7 : 1 }]}
+          >
+            {loading ? (
+              <ActivityIndicator color={t.onActionPrimary} />
+            ) : (
+              <Text style={[styles.primaryText, { color: t.onActionPrimary }]}>Log in</Text>
+            )}
+          </Pressable>
         </View>
 
-        <Pressable
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.buttonText}>Login</Text>
-          )}
-        </Pressable>
-      </View>
+        <View style={styles.footer}>
+          <Text style={[styles.footerText, { color: t.textSecondary }]}>New to Get Up & Go?</Text>
+          <Pressable onPress={() => router.push('/signup')} hitSlop={12}>
+            <Text style={[styles.link, { color: t.textBrand }]}>Create an account</Text>
+          </Pressable>
+        </View>
 
-      <View style={styles.footerContainer}>
-        <Text style={styles.footerText}>Don&apos;t have an account? </Text>
-        <Pressable onPress={handleSignUp}>
-          <Text style={styles.signUpText}>Sign Up</Text>
-        </Pressable>
-      </View>
-      <View className="bg-slate-500 w-fit px-4 py-2 rounded-md">
-        <Pressable onPress={handleDevMode}>
-          <Text className="text-white font-medium">Open Dev Mode</Text>
-        </Pressable>
-      </View>
-    </View>
+        {__DEV__ ? (
+          <Pressable onPress={() => router.push('/DevHappeningScreen')} style={styles.devLink}>
+            <Text style={[styles.devText, { color: t.textSecondary }]}>Open dev tools</Text>
+          </Pressable>
+        ) : null}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    justifyContent: "center",
+  },
+  content: {
+    flexGrow: 1,
+    justifyContent: 'center',
     paddingHorizontal: 16,
-    height: "100%",
-    width: "100%",
-    backgroundColor: COLORS.surface,
+    gap: 24,
+  },
+  brand: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  logo: {
+    width: 96,
+    height: 96,
+    marginBottom: 8,
   },
   title: {
-    color: COLORS.titleText,
-    fontSize: 42,
-    fontWeight: "600",
-    textAlign: "center",
-    marginBottom: 28,
+    fontFamily: fonts.display,
+    fontSize: 32,
+    lineHeight: 36,
   },
-  formContainer: {
-    flexDirection: "column",
+  subtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  card: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    padding: 20,
     gap: 16,
   },
-  inputGroup: {
-    flexDirection: "column",
-    gap: 8,
+  errorBox: {
+    borderRadius: radius.md,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
-  label: {
-    fontSize: 14,
-    color: COLORS.text,
+  errorText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
   },
-  input: {
-    width: "100%",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#D1D5DB", // equivalent to border-gray-300
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    height: 44, // Increased slightly from 36px for cleaner touch area
-    backgroundColor: COLORS.inputBg,
-  },
-  button: {
-    width: "100%",
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: COLORS.buttonBg,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 32,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  footerContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
+  primary: {
+    height: 52,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 4,
   },
-  footerText: {
-    fontSize: 14,
-    color: COLORS.muted,
+  primaryText: {
+    fontSize: 16,
+    fontWeight: '700',
   },
-  signUpText: {
-    fontSize: 14,
-    color: COLORS.primary,
-    fontWeight: "600",
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  footerText: {
+    fontSize: 15,
+  },
+  link: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  devLink: {
+    alignSelf: 'center',
+    padding: 8,
+  },
+  devText: {
+    fontSize: 13,
+    textDecorationLine: 'underline',
   },
 });
-
-export default LoginScreen;
