@@ -1,6 +1,6 @@
 /*
  * Get Up & Go partner portal: design tokens (light) and shared classes.
- * The ADayWithoutSun @font-face lives in public/index.html because it needs
+ * The Fredoka @font-face lives in public/index.html because it needs
  * %PUBLIC_URL%, which CRA only resolves in HTML.
  *
  * Contrast rules:
@@ -29,7 +29,7 @@
   --gng-radius-pill: 999px;
   --gng-shadow-card: 0 2px 8px rgba(36, 34, 27, 0.08);
   --gng-font-body: Arial, Helvetica, sans-serif;
-  --gng-font-heading: "ADayWithoutSun", "Arial Rounded MT Bold", sans-serif;
+  --gng-font-heading: "Fredoka", "Arial Rounded MT Bold", sans-serif;
   --gng-sidebar-width: 248px;
 }
 
