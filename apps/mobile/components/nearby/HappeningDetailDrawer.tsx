@@ -16,11 +16,12 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { Share2, MapPin, Clock, ThumbsUp, QrCode, Image as ImageIcon, Check } from "lucide-react-native";
-import { happeningService } from "../../../../packages/firebase/src/services/happeningService";
+import { CHECK_IN_GP, happeningService } from "../../../../packages/firebase/src/services/happeningService";
 import { Happening } from "../../../../packages/firebase/src/types/happening";
 import { useGoer } from "../../hooks/useGoer"; // Adjust path as needed
 import QRScannerModal from "./QRScannerModal";
 import { useAppTheme } from "@/hooks/useAppTheme";
+import { circleFeedService } from "../../../../packages/firebase/src/services/circleFeedService";
 
 interface Props {
   darkMode: boolean;
@@ -118,6 +119,15 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
     setGoing(nextState);
     try {
       await happeningService.toggleRsvp(event.id, goerId, going);
+      if (nextState) {
+        circleFeedService.postToMyCircles({
+          goerUid: goerId,
+          username,
+          type: "rsvp",
+          happeningId: event.id,
+          happeningTitle: event.title,
+        });
+      }
     } catch (err) {
       setGoing(going);
       Alert.alert("RSVP Error", "Failed to update RSVP status.");
@@ -141,9 +151,19 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
     const matchesPartner = cleanData === `partner:${event.partner_id}` || cleanData === String(event.partner_id);
 
     if (matchesEvent || matchesPartner) {
-      // Passes goerId to arrayUnion inside attendees
-      await happeningService.checkInAttendee(event.id, goerId);
-      Alert.alert("Check-in Successful!", `You are checked in to ${event.title}.`);
+      const result = await happeningService.checkInAndAwardGp(event.id, goerId);
+      if (result === "already_checked_in") {
+        Alert.alert("Already checked in", `You've already earned your Go-Points for ${event.title}.`);
+        return;
+      }
+      circleFeedService.postToMyCircles({
+        goerUid: goerId,
+        username,
+        type: "check_in",
+        happeningId: event.id,
+        happeningTitle: event.title,
+      });
+      Alert.alert(`+${CHECK_IN_GP} GP · Checked in!`, `Enjoy ${event.title}.`);
     } else {
       throw new Error("Invalid QR Code for this venue or happening.");
     }

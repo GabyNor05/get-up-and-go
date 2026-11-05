@@ -6,6 +6,8 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  runTransaction,
+  increment,
   arrayUnion,
   arrayRemove,
   query,
@@ -18,6 +20,9 @@ import { db } from "../config/firebase";
 import { Happening, HappeningCategory, HappeningUpdate } from "../types/happening";
 
 const COLLECTION_NAME = "happenings";
+export const CHECK_IN_GP = 50;
+
+export type CheckInResult = "checked_in" | "already_checked_in";
 
 // Helper to compute distance in kilometers between two GPS coordinates
 function calculateDistanceKm(
@@ -132,6 +137,32 @@ export const happeningService = {
     const docRef = doc(db, COLLECTION_NAME, happeningId);
     await updateDoc(docRef, {
       attendees: arrayUnion(userId),
+    });
+  },
+
+  /**
+   * Check a Goer in and award Go-Points in one transaction.
+   * Adds the UID to `attendees` and increments goers.total_gp + monthly_gp,
+   * but never awards twice for the same Happening.
+   */
+  async checkInAndAwardGp(happeningId: string, goerUid: string): Promise<CheckInResult> {
+    const happeningRef = doc(db, COLLECTION_NAME, happeningId);
+    const goerRef = doc(db, "goers", goerUid);
+
+    return runTransaction(db, async (tx) => {
+      const happeningSnap = await tx.get(happeningRef);
+      if (!happeningSnap.exists()) throw new Error("This Happening no longer exists.");
+
+      const attendees = (happeningSnap.data().attendees as string[] | undefined) ?? [];
+      if (attendees.includes(goerUid)) return "already_checked_in";
+
+      tx.update(happeningRef, { attendees: arrayUnion(goerUid) });
+      tx.set(
+        goerRef,
+        { total_gp: increment(CHECK_IN_GP), monthly_gp: increment(CHECK_IN_GP) },
+        { merge: true }
+      );
+      return "checked_in";
     });
   },
 
