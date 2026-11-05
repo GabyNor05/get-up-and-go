@@ -5,12 +5,22 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
+    "splash": {
+      "image": "./assets/splash-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F4F0DD",
+      "dark": {
+        "image": "./assets/splash-logo.png",
+        "backgroundColor": "#1A1A1A"
+      }
+    },
     "scheme": "getupandgo",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.gabynorris.getupandgo"
+      "bundleIdentifier": "com.gabynorris.getupandgo",
+      "icon": "./assets/app-icon.png"
     },
     "android": {
       "package": "com.gabynorris.getupandgo",
@@ -27,7 +37,8 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.SCHEDULE_EXACT_ALARM"
-      ]
+      ],
+      "icon": "./assets/app-icon.png"
     },
     "web": {
       "bundler": "metro",
