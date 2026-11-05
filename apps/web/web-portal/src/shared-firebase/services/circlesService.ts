@@ -12,11 +12,23 @@ import {
   arrayRemove, 
   query, 
   where, 
-  serverTimestamp 
+  serverTimestamp,
+  limit,
 } from 'firebase/firestore';
 import { Circle, CreateCircleDTO } from '../types/circle';
 
 const CIRCLES_COLLECTION = 'circles';
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
+
+/** e.g. "GRLZ-4TQ": 4 letters from the title + 3 random characters */
+export function generateJoinCode(title: string): string {
+  const prefix = (title.toUpperCase().replace(/[^A-Z]/g, '') + 'CIRC').slice(0, 4);
+  let suffix = '';
+  for (let i = 0; i < 3; i++) {
+    suffix += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+  }
+  return `${prefix}-${suffix}`;
+}
 
 export const circleService = {
   /**
@@ -35,6 +47,7 @@ export const circleService = {
       card_bg: data.cardBg,
       tags: data.tags || [],
       goer_ids: initialMembers,
+      join_code: generateJoinCode(data.title),
       max_size: data.maxSize || 20,
       everybody_sends_invites: data.everybodySendsInvites ?? true,
       created_by: data.creatorGoerId,
@@ -70,6 +83,21 @@ export const circleService = {
       id: doc.id,
       ...doc.data()
     })) as Circle[];
+  },
+
+  /**
+   * Find a Circle by its shareable join code (case-insensitive)
+   */
+  async getCircleByJoinCode(code: string): Promise<Circle | null> {
+    const q = query(
+      collection(db, CIRCLES_COLLECTION),
+      where('join_code', '==', code.trim().toUpperCase()),
+      limit(1)
+    );
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    const match = snapshot.docs[0];
+    return { id: match.id, ...match.data() } as Circle;
   },
 
   /**

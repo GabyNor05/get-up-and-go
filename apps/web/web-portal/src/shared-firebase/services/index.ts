@@ -4,3 +4,4 @@ export * from './goerService';
 export * from './partnerService';
 export * from './circlesService';
 export * from './happeningService';
+export * from './circleFeedService';

@@ -4,7 +4,12 @@ import {
   getDoc, 
   updateDoc, 
   arrayUnion, 
-  arrayRemove 
+  arrayRemove,
+  collection,
+  getDocs,
+  limit,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Goer, CreateGoerData, GoerPermissions } from "../types/goer";
@@ -49,6 +54,19 @@ export const goerService = {
   },
 
   /**
+   * Finds a Goer by their public Goer ID (e.g. "ZDUX-08-DP")
+   */
+  async findByGoerId(goerId: string): Promise<Goer | null> {
+    const q = query(
+      collection(db, GOERS_COLLECTION),
+      where("goer_id", "==", goerId.trim().toUpperCase()),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    return snap.empty ? null : (snap.docs[0].data() as Goer);
+  },
+
+  /**
    * Retrieves a Goer profile by auth UID
    */
   async getGoer(uid: string): Promise<Goer | null> {
@@ -80,9 +98,8 @@ export const goerService = {
    */
   async joinCircle(uid: string, circleId: string): Promise<void> {
     const goerRef = doc(db, GOERS_COLLECTION, uid);
-    await updateDoc(goerRef, {
-      circles: arrayUnion(circleId),
-    });
+    // merge: works even if the goers doc hasn't been created yet
+    await setDoc(goerRef, { circles: arrayUnion(circleId) }, { merge: true });
   },
 
   /**
@@ -90,8 +107,6 @@ export const goerService = {
    */
   async leaveCircle(uid: string, circleId: string): Promise<void> {
     const goerRef = doc(db, GOERS_COLLECTION, uid);
-    await updateDoc(goerRef, {
-      circles: arrayRemove(circleId),
-    });
+    await setDoc(goerRef, { circles: arrayRemove(circleId) }, { merge: true });
   }
 };
