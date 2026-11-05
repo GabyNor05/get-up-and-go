@@ -80,9 +80,8 @@ export const goerService = {
    */
   async joinCircle(uid: string, circleId: string): Promise<void> {
     const goerRef = doc(db, GOERS_COLLECTION, uid);
-    await updateDoc(goerRef, {
-      circles: arrayUnion(circleId),
-    });
+    // merge: works even if the goers doc hasn't been created yet
+    await setDoc(goerRef, { circles: arrayUnion(circleId) }, { merge: true });
   },
 
   /**
@@ -90,8 +89,6 @@ export const goerService = {
    */
   async leaveCircle(uid: string, circleId: string): Promise<void> {
     const goerRef = doc(db, GOERS_COLLECTION, uid);
-    await updateDoc(goerRef, {
-      circles: arrayRemove(circleId),
-    });
+    await setDoc(goerRef, { circles: arrayRemove(circleId) }, { merge: true });
   }
 };

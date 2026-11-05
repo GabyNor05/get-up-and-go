@@ -1,310 +1,393 @@
-import { useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
-import { ChevronLeft, X, Check } from "lucide-react-native";
-import { Circle } from "../../../components/circles/circles-data";
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Check, ChevronLeft, Minus, Plus, X } from 'lucide-react-native';
 
-interface Props {
-  darkMode: boolean;
-  onBack: () => void;
-  onCreate: (circle: Circle, inviteeUserIds: string[]) => void;
-}
+import { CIRCLE_EMOJIS, CIRCLE_THEMES } from '@/components/circles/circleThemes';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import { useGoer } from '@/hooks/useGoer';
+import { circleService } from '../../../../../packages/firebase/src/services/circlesService';
+import { goerService } from '../../../../../packages/firebase/src/services/goerService';
+import { fonts, radius } from '../../../../../packages/shared-ui/tokens';
 
-const THEMES = [
-  { accent: "#A88AED", light: "#EDE8FF", dark: "#2A2340" },
-  { accent: "#A6C261", light: "#E8F5D8", dark: "#1E2A18" },
-  { accent: "#E8A84C", light: "#FFF3E0", dark: "#2A2018" },
-  { accent: "#6CB8E8", light: "#E8F4FF", dark: "#182030" },
-  { accent: "#E87D6C", light: "#FFE8E4", dark: "#2A1E1B" },
-  { accent: "#B8A0E8", light: "#F1EBFF", dark: "#241E30" },
-  { accent: "#7DC98A", light: "#E4F7E8", dark: "#182A1D" },
-  { accent: "#E8C24C", light: "#FFF7E0", dark: "#2A2618" },
-];
+const MAX_TAGS = 4;
+const MIN_SIZE = 2;
+const MAX_SIZE = 50;
 
-const EMOJIS = ["🌸", "⚡", "🏡", "🧘", "⛰️", "📚", "⚽", "🚴", "🎨", "🎮", "🍜", "🎵", "🌊", "🔥"];
+export default function NewCircleScreen() {
+  const router = useRouter();
+  const { t, isDark } = useAppTheme();
+  const { goerId } = useGoer();
 
-function generateCircleId(name: string): string {
-  const prefix = (name.replace(/[^a-zA-Z]/g, "").slice(0, 4) || "CIRC").toUpperCase();
-  const num = String(Math.floor(Math.random() * 90) + 10);
-  const suffix = Array.from({ length: 2 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ"[Math.floor(Math.random() * 24)]).join("");
-  return `${prefix}-${num}-${suffix}`;
-}
-
-export default function CreateNewCircleScreen({ darkMode, onBack, onCreate }: Props) {
-  const [name, setName] = useState("");
+  const [title, setTitle] = useState('');
+  const [emoji, setEmoji] = useState(CIRCLE_EMOJIS[0]);
   const [themeIndex, setThemeIndex] = useState(0);
-  const [emoji, setEmoji] = useState(EMOJIS[0]);
-  const [tagInput, setTagInput] = useState("");
+  const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
-  const [goal, setGoal] = useState("");
-  const [maxCirclees, setMaxCirclees] = useState("20");
-  const [userIdInput, setUserIdInput] = useState("");
-  const [inviteeIds, setInviteeIds] = useState<string[]>([]);
+  const [maxSize, setMaxSize] = useState(20);
+  const [saving, setSaving] = useState(false);
 
-  const bg = darkMode ? "#1A1A1A" : "#F4F0DD";
-  const text = darkMode ? "#FAF8F0" : "#24221B";
-  const muted = darkMode ? "#B8B6AC" : "#605E55";
-  const border = darkMode ? "rgba(250,248,240,0.1)" : "rgba(36,34,27,0.12)";
-  const surface = darkMode ? "#24221B" : "#FFFFFF";
-
-  const theme = THEMES[themeIndex];
-  const canCreate = name.trim().length > 0;
+  const theme = CIRCLE_THEMES[themeIndex];
+  const canCreate = title.trim().length > 0 && !saving;
 
   const addTag = () => {
-    const t = tagInput.trim();
-    if (!t || tags.length >= 4 || tags.includes(t)) return;
-    setTags((list) => [...list, t]);
-    setTagInput("");
-  };
-  const addInvitee = () => {
-    const id = userIdInput.trim();
-    if (!id || inviteeIds.includes(id)) return;
-    setInviteeIds((list) => [...list, id]);
-    setUserIdInput("");
+    const tag = tagInput.trim();
+    if (!tag || tags.length >= MAX_TAGS || tags.includes(tag)) return;
+    setTags((list) => [...list, tag]);
+    setTagInput('');
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    if (!goerId) {
+      Alert.alert('Please log in', 'You need an account to start a Circle.');
+      return;
+    }
     if (!canCreate) return;
-    const newCircle: Circle = {
-      id: Date.now(),
-      circleId: generateCircleId(name),
-      name: name.trim(),
-      emoji,
-      accent: theme.accent,
-      cardBg: { light: theme.light, dark: theme.dark },
-      tags,
-      lastActive: "Just now",
-      goal: goal.trim() ? goal.trim() : null,
-      goalPct: 0,
-      gpsCaption: "",
-      members: [], // starts empty — invitees join once they accept, see inviteeIds
-    };
-    onCreate(newCircle, inviteeIds);
+    setSaving(true);
+    try {
+      const circleId = await circleService.createCircle({
+        title,
+        emoji,
+        accent: theme.accent,
+        cardBg: { light: theme.light, dark: theme.dark },
+        tags,
+        maxSize,
+        creatorGoerId: goerId,
+      });
+      await goerService.joinCircle(goerId, circleId);
+      router.replace({ pathname: '/(tabs)/(circles)/[id]', params: { id: circleId } });
+    } catch (err) {
+      console.warn('Create Circle failed', err);
+      Alert.alert("Couldn't create your Circle", 'Check your connection and try again.');
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const inputStyle = [styles.input, { color: t.textPrimary, backgroundColor: t.bgElevated, borderColor: t.borderSubtle }];
 
   return (
-    <View style={{ flex: 1, backgroundColor: bg }}>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 14, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
-        <Pressable onPress={onBack} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: surface, borderWidth: 1, borderColor: border, alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
-          <ChevronLeft size={17} color={text} />
-        </Pressable>
-
-        <Text style={{ fontFamily: "ADayWithoutSun", fontSize: 28, color: text, textAlign: "center", marginBottom: 18 }}>
-          New Circle
-        </Text>
-
-        {/* Live preview — matches the "normal" bento card exactly */}
-        <View
-          style={{
-            backgroundColor: darkMode ? theme.dark : theme.light,
-            borderRadius: 22,
-            padding: 16,
-            borderWidth: 1,
-            borderColor: `${theme.accent}33`,
-            marginBottom: 24,
-            minHeight: 140,
-            justifyContent: "space-between",
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: `${theme.accent}30`, alignItems: "center", justifyContent: "center" }}>
-              <Text style={{ fontSize: 18 }}>{emoji}</Text>
-            </View>
-            <View style={{ backgroundColor: `${theme.accent}25`, borderRadius: 20, paddingVertical: 3, paddingHorizontal: 9 }}>
-              <Text style={{ fontSize: 10, fontWeight: "700", color: theme.accent }}>Just now</Text>
-            </View>
-          </View>
-          <View style={{ marginTop: 10 }}>
-            <Text style={{ fontFamily: "ADayWithoutSun", fontSize: 16, color: text }} numberOfLines={1}>
-              {name.trim() || "Your circle name"}
-            </Text>
-            <Text style={{ fontSize: 12, color: muted, marginTop: 2 }}>1 member</Text>
-          </View>
-          {tags.length > 0 && (
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-              {tags.map((t) => (
-                <View key={t} style={{ backgroundColor: `${theme.accent}22`, borderRadius: 20, paddingVertical: 3, paddingHorizontal: 10 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "700", color: theme.accent }}>{t}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-          {goal.trim().length > 0 && (
-            <View style={{ marginTop: 8 }}>
-              <Text style={{ fontSize: 11, color: muted }} numberOfLines={1}>🎯 {goal}</Text>
-              <View style={{ height: 5, backgroundColor: `${theme.accent}22`, borderRadius: 3, marginTop: 5, overflow: "hidden" }}>
-                <View style={{ height: "100%", width: "0%", backgroundColor: theme.accent }} />
-              </View>
-            </View>
-          )}
+    <KeyboardAvoidingView
+      style={[styles.screen, { backgroundColor: t.bgCanvas }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <View style={styles.topBar}>
+          <Pressable
+            onPress={() => router.back()}
+            accessibilityLabel="Back"
+            style={[styles.iconButton, { backgroundColor: t.bgSurface, borderColor: t.borderSubtle }]}
+          >
+            <ChevronLeft size={22} color={t.textPrimary} />
+          </Pressable>
         </View>
 
-        <Field label="Circle Name">
-          <TextInput
-            placeholder="e.g. Weekend Warriors"
-            placeholderTextColor={muted}
-            value={name}
-            onChangeText={setName}
-            style={{ backgroundColor: surface, borderWidth: 1.5, borderColor: border, borderRadius: 12, paddingVertical: 13, paddingHorizontal: 16, fontSize: 14, color: text }}
-          />
-        </Field>
+        <Text style={[styles.title, { color: t.textPrimary }]}>New Circle</Text>
 
-        <Field label="Icon">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
-            {EMOJIS.map((e) => {
-              const selected = emoji === e;
-              return (
-                <Pressable
-                  key={e}
-                  onPress={() => setEmoji(e)}
-                  style={{ width: 42, height: 42, borderRadius: 21, alignItems: "center", justifyContent: "center", backgroundColor: selected ? theme.accent : surface, borderWidth: selected ? 0 : 1, borderColor: border }}
-                >
-                  <Text style={{ fontSize: 18 }}>{e}</Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        </Field>
-
-        <Field label="Color">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
-            {THEMES.map((th, i) => {
-              const selected = i === themeIndex;
-              return (
-                <Pressable
-                  key={th.accent}
-                  onPress={() => setThemeIndex(i)}
-                  style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: th.accent, alignItems: "center", justifyContent: "center", borderWidth: selected ? 3 : 0, borderColor: bg }}
-                >
-                  {selected && <Check size={16} color="#fff" />}
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        </Field>
-
-        <Field label="Tags (up to 4)">
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: tags.length > 0 ? 10 : 0 }}>
-            <TextInput
-              placeholder="e.g. Hiking"
-              placeholderTextColor={muted}
-              value={tagInput}
-              onChangeText={setTagInput}
-              onSubmitEditing={addTag}
-              editable={tags.length < 4}
-              style={{ flex: 1, backgroundColor: surface, borderWidth: 1.5, borderColor: border, borderRadius: 12, paddingVertical: 11, paddingHorizontal: 14, fontSize: 14, color: text }}
-            />
-            <Pressable
-              disabled={!tagInput.trim() || tags.length >= 4}
-              onPress={addTag}
-              style={{ backgroundColor: tagInput.trim() && tags.length < 4 ? theme.accent : border, borderRadius: 12, paddingHorizontal: 16, alignItems: "center", justifyContent: "center" }}
-            >
-              <Text style={{ color: tagInput.trim() && tags.length < 4 ? "#fff" : muted, fontSize: 13, fontWeight: "700" }}>Add</Text>
-            </Pressable>
-          </View>
-          {tags.length > 0 && (
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-              {tags.map((t) => (
-                <Pressable key={t} onPress={() => setTags((list) => list.filter((x) => x !== t))} style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: `${theme.accent}22`, borderRadius: 20, paddingVertical: 5, paddingHorizontal: 10 }}>
-                  <Text style={{ fontSize: 12, fontWeight: "700", color: theme.accent }}>{t}</Text>
-                  <X size={11} color={theme.accent} />
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </Field>
-
-        <Field label="Goal (optional)">
-          <TextInput
-            placeholder="e.g. 10 km from Moonlit trailhead"
-            placeholderTextColor={muted}
-            value={goal}
-            onChangeText={setGoal}
-            style={{ backgroundColor: surface, borderWidth: 1.5, borderColor: border, borderRadius: 12, paddingVertical: 13, paddingHorizontal: 16, fontSize: 14, color: text, marginBottom: 6 }}
-          />
-          <Text style={{ fontSize: 11.5, color: muted }}>Progress starts at 0% — the circle updates it as everyone logs activity.</Text>
-        </Field>
-
-        <Field label="Max Circlees">
-          <TextInput
-            placeholder="20"
-            placeholderTextColor={muted}
-            value={maxCirclees}
-            onChangeText={setMaxCirclees}
-            keyboardType="number-pad"
-            style={{ backgroundColor: surface, borderWidth: 1.5, borderColor: border, borderRadius: 12, paddingVertical: 13, paddingHorizontal: 16, fontSize: 14, color: text, width: 120 }}
-          />
-        </Field>
-
-        <Field label="Add Circlees by User ID">
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: inviteeIds.length > 0 ? 10 : 0 }}>
-            <TextInput
-              placeholder="e.g. ZDUX-08-DP"
-              placeholderTextColor={muted}
-              value={userIdInput}
-              onChangeText={setUserIdInput}
-              onSubmitEditing={addInvitee}
-              autoCapitalize="characters"
-              style={{ flex: 1, backgroundColor: surface, borderWidth: 1.5, borderColor: border, borderRadius: 12, paddingVertical: 11, paddingHorizontal: 14, fontSize: 14, color: text }}
-            />
-            <Pressable
-              disabled={!userIdInput.trim()}
-              onPress={addInvitee}
-              style={{ backgroundColor: userIdInput.trim() ? "#352C53" : border, borderRadius: 12, paddingHorizontal: 16, alignItems: "center", justifyContent: "center" }}
-            >
-              <Text style={{ color: userIdInput.trim() ? "#fff" : muted, fontSize: 13, fontWeight: "700" }}>Add</Text>
-            </Pressable>
-          </View>
-          {inviteeIds.length > 0 && (
-            <View style={{ gap: 8 }}>
-              {inviteeIds.map((id) => (
-                <View key={id} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: surface, borderWidth: 1, borderColor: border, borderRadius: 12, paddingVertical: 9, paddingHorizontal: 12 }}>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: text }}>{id}</Text>
-                  <Pressable onPress={() => setInviteeIds((list) => list.filter((x) => x !== id))}>
-                    <X size={15} color={muted} />
-                  </Pressable>
-                </View>
-              ))}
-              <Text style={{ fontSize: 11.5, color: muted }}>
-                {inviteeIds.length} circlee{inviteeIds.length > 1 ? "s" : ""} will be invited once the circle is created.
-              </Text>
-            </View>
-          )}
-        </Field>
-
-        <Pressable
-          disabled={!canCreate}
-          onPress={handleCreate}
-          style={{
-            backgroundColor: canCreate ? theme.accent : border,
-            borderRadius: 16,
-            paddingVertical: 16,
-            alignItems: "center",
-            marginTop: 6,
-            marginBottom: 16,
-            shadowColor: theme.accent,
-            shadowOpacity: canCreate ? 0.4 : 0,
-            shadowRadius: 16,
-            shadowOffset: { width: 0, height: 4 },
-            elevation: canCreate ? 4 : 0,
-          }}
+        {/* Live preview */}
+        <View
+          style={[styles.preview, { backgroundColor: isDark ? theme.dark : theme.light, borderColor: t.borderSubtle }]}
         >
-          <Text style={{ color: canCreate ? "#FAF8F0" : muted, fontSize: 15, fontWeight: "700" }}>Create New Circle</Text>
-        </Pressable>
+          <View style={[styles.previewBlob, { backgroundColor: theme.accent }]} />
+          <View style={[styles.emojiBadge, { backgroundColor: t.bgElevated }]}>
+            <Text style={styles.emojiLarge}>{emoji}</Text>
+          </View>
+          <Text numberOfLines={1} style={[styles.previewTitle, { color: t.textPrimary }]}>
+            {title.trim() || 'Your Circle'}
+          </Text>
+          <Text style={[styles.caption, { color: t.textSecondary }]}>Up to {maxSize} members</Text>
+        </View>
 
-        <Pressable onPress={onBack} style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 8 }}>
-          <ChevronLeft size={16} color={muted} />
-          <Text style={{ fontSize: 14, color: muted, fontWeight: "600" }}>Back</Text>
-        </Pressable>
+        <Text style={[styles.label, { color: t.textPrimary }]}>Name</Text>
+        <TextInput
+          value={title}
+          onChangeText={setTitle}
+          placeholder="e.g. Trail Crew"
+          placeholderTextColor={t.textSecondary}
+          maxLength={32}
+          style={inputStyle}
+        />
+
+        <Text style={[styles.label, { color: t.textPrimary }]}>Icon</Text>
+        <View style={styles.wrap}>
+          {CIRCLE_EMOJIS.map((option) => {
+            const selected = option === emoji;
+            return (
+              <Pressable
+                key={option}
+                onPress={() => setEmoji(option)}
+                accessibilityLabel={`Icon ${option}`}
+                style={[
+                  styles.emojiOption,
+                  { backgroundColor: selected ? t.fillBrandSubtle : t.bgSurface, borderColor: selected ? t.focusRing : t.borderSubtle },
+                ]}
+              >
+                <Text style={styles.emoji}>{option}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <Text style={[styles.label, { color: t.textPrimary }]}>Colour</Text>
+        <View style={styles.wrap}>
+          {CIRCLE_THEMES.map((option, index) => {
+            const selected = index === themeIndex;
+            return (
+              <Pressable
+                key={option.accent}
+                onPress={() => setThemeIndex(index)}
+                accessibilityLabel={`Colour ${index + 1}`}
+                style={[styles.swatch, { backgroundColor: option.accent, borderColor: selected ? t.textPrimary : 'transparent' }]}
+              >
+                {selected ? <Check size={18} color="#24221B" /> : null}
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <Text style={[styles.label, { color: t.textPrimary }]}>Tags ({tags.length}/{MAX_TAGS})</Text>
+        <View style={styles.tagRow}>
+          <TextInput
+            value={tagInput}
+            onChangeText={setTagInput}
+            onSubmitEditing={addTag}
+            placeholder="Hiking, Markets…"
+            placeholderTextColor={t.textSecondary}
+            returnKeyType="done"
+            editable={tags.length < MAX_TAGS}
+            style={[inputStyle, styles.flex]}
+          />
+          <Pressable
+            onPress={addTag}
+            accessibilityLabel="Add tag"
+            style={[styles.squareButton, { backgroundColor: t.fillBrandSubtle }]}
+          >
+            <Plus size={20} color={t.textBrand} />
+          </Pressable>
+        </View>
+        {tags.length > 0 ? (
+          <View style={styles.wrap}>
+            {tags.map((tag) => (
+              <Pressable
+                key={tag}
+                onPress={() => setTags((list) => list.filter((item) => item !== tag))}
+                accessibilityLabel={`Remove ${tag}`}
+                style={[styles.tag, { backgroundColor: t.bgSurface, borderColor: t.borderSubtle }]}
+              >
+                <Text style={[styles.tagText, { color: t.textPrimary }]}>{tag}</Text>
+                <X size={14} color={t.textSecondary} />
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
+        <Text style={[styles.label, { color: t.textPrimary }]}>Max members</Text>
+        <View style={[styles.stepper, { backgroundColor: t.bgSurface, borderColor: t.borderSubtle }]}>
+          <Pressable
+            onPress={() => setMaxSize((size) => Math.max(MIN_SIZE, size - 1))}
+            accessibilityLabel="Fewer members"
+            style={[styles.stepButton, { backgroundColor: t.fillBrandSubtle }]}
+          >
+            <Minus size={18} color={t.textBrand} />
+          </Pressable>
+          <Text style={[styles.stepValue, { color: t.textPrimary }]}>{maxSize}</Text>
+          <Pressable
+            onPress={() => setMaxSize((size) => Math.min(MAX_SIZE, size + 1))}
+            accessibilityLabel="More members"
+            style={[styles.stepButton, { backgroundColor: t.fillBrandSubtle }]}
+          >
+            <Plus size={18} color={t.textBrand} />
+          </Pressable>
+        </View>
       </ScrollView>
-    </View>
+
+      <View style={[styles.footer, { borderTopColor: t.borderSubtle, backgroundColor: t.bgCanvas }]}>
+        <Pressable
+          onPress={handleCreate}
+          disabled={!canCreate}
+          style={[styles.primary, { backgroundColor: canCreate ? t.actionPrimary : t.borderSubtle }]}
+        >
+          {saving ? (
+            <ActivityIndicator color={t.onActionPrimary} />
+          ) : (
+            <Text style={[styles.primaryText, { color: canCreate ? t.onActionPrimary : t.textSecondary }]}>
+              Create Circle
+            </Text>
+          )}
+        </Pressable>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <View style={{ marginBottom: 20 }}>
-      <Text style={{ fontSize: 13, fontWeight: "600", opacity: 0.75, marginBottom: 8 }}>{label}</Text>
-      {children}
-    </View>
-  );
-}
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    gap: 8,
+  },
+  topBar: {
+    marginTop: 8,
+  },
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    fontFamily: fonts.display,
+    fontSize: 32,
+    lineHeight: 36,
+    marginVertical: 8,
+  },
+  preview: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    padding: 16,
+    gap: 6,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  previewBlob: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    right: -40,
+    bottom: -60,
+    opacity: 0.35,
+  },
+  emojiBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiLarge: {
+    fontSize: 24,
+  },
+  previewTitle: {
+    fontFamily: fonts.display,
+    fontSize: 24,
+    lineHeight: 28,
+  },
+  caption: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 12,
+  },
+  input: {
+    height: 52,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    paddingHorizontal: 16,
+    fontSize: 15,
+  },
+  wrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  emojiOption: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emoji: {
+    fontSize: 22,
+  },
+  swatch: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tagRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  flex: {
+    flex: 1,
+  },
+  squareButton: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  tagText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    padding: 6,
+  },
+  stepButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepValue: {
+    fontFamily: fonts.display,
+    fontSize: 24,
+  },
+  footer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+  },
+  primary: {
+    height: 52,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+});
