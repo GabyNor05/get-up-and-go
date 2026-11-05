@@ -19,9 +19,9 @@ const COLORS = {
   muted: "#605E55",
   border: "rgba(36,34,27,0.12)",
   inputBg: "#FFFFFF",
-  primary: "#A88AED",
+  primary: "#5B4C9E",
   titleText: "#352C53",
-  buttonBg: "#64539E",
+  buttonBg: "#5B4C9E",
 };
 
 const LoginScreen = () => {

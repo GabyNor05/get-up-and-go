@@ -73,16 +73,16 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
 
   const permissions = [
     {
-      icon: <MapPin size={24} color="#A88AED" />,
-      iconBg: "#A88AED",
+      icon: <MapPin size={24} color="#5B4C9E" />,
+      iconBg: "#5B4C9E",
       title: "Location Access",
       desc: "Allow location access for Get Up & Go to suggest area specific happenings.",
       on: locationOn,
       toggle: toggleLocation,
     },
     {
-      icon: <Camera size={24} color="#A88AED" />,
-      iconBg: "#A88AED",
+      icon: <Camera size={24} color="#5B4C9E" />,
+      iconBg: "#5B4C9E",
       title: "Camera Access",
       desc: "Grant camera access to scan QR codes at Happenings you attend.",
       on: cameraOn,
@@ -113,7 +113,7 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
               marginBottom: 20,
             }}
           >
-            <ShieldLock size={36} color="#A88AED" />
+            <ShieldLock size={36} color="#5B4C9E" />
           </View>
           <Text
             style={{
@@ -227,7 +227,7 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
             gap: 10,
           }}
         >
-          <Info size={20} color="#A88AED" />
+          <Info size={20} color="#5B4C9E" />
           <Text style={{ fontSize: 12, color: muted, lineHeight: 18, flex: 1 }}>
             You can change these permissions anytime in your device Settings.
           </Text>
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 54,
     borderRadius: 18,
-    backgroundColor: "#A88AED",
+    backgroundColor: "#5B4C9E",
     alignItems: "center",
     justifyContent: "center",
   },

@@ -9,11 +9,7 @@ import {
   Animated,
 } from "react-native";
 import Svg, { Circle, G } from "react-native-svg";
-
-interface Props {
-  darkMode: boolean;
-  toggleDark: () => void;
-}
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface Activity {
   id: number;
@@ -76,7 +72,8 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const RING_RADIUS = 36;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
-export default function HomeScreen({ darkMode, toggleDark }: Props) {
+export default function HomeScreen() {
+  const { isDark: darkMode, t } = useAppTheme();
   const [goalProgress] = useState(68);
   const progressAnim = useRef(new Animated.Value(0)).current;
 
@@ -93,11 +90,11 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
     outputRange: [RING_CIRCUMFERENCE, 0],
   });
 
-  const bg = darkMode ? "#1A1A1A" : "#F4F0DD";
-  const surface = darkMode ? "#24221B" : "#FAF8F0";
-  const text = darkMode ? "#FAF8F0" : "#24221B";
-  const muted = "#605E55";
-  const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
+  const bg = t.bgCanvas;
+  const surface = t.bgSurface;
+  const text = t.textPrimary;
+  const muted = t.textSecondary;
+  const border = t.borderSubtle;
 
   function todayDate() {
     const today = new Date();
@@ -286,7 +283,7 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
                     </View>
                   </View>
                   <Text
-                    style={{ color: "#A88AED", fontSize: 16, opacity: 0.7 }}
+                    style={{ color: t.textBrand, fontSize: 16 }}
                   >
                     ›
                   </Text>
@@ -297,8 +294,8 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
           {/* Quick actions */}
           <View style={{ flexDirection: "row", gap: 12 }}>
             {[
-              { emoji: "🌟", label: "Trending Spots", color: "#A88AED" },
-              { emoji: "📋", label: "Your Updates", color: "#A6C261" },
+              { emoji: "🌟", label: "Trending Spots", color: t.textBrand },
+              { emoji: "📋", label: "Your Updates", color: t.textProgress },
             ].map(({ emoji, label, color }) => (
               <Pressable
                 key={label}
@@ -345,7 +342,7 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
               </Text>
               <Pressable>
                 <Text
-                  style={{ color: "#A88AED", fontSize: 13, fontWeight: "600" }}
+                  style={{ color: t.textBrand, fontSize: 13, fontWeight: "700" }}
                 >
                   See all →
                 </Text>
@@ -431,7 +428,7 @@ function ActivityCard({
             paddingHorizontal: 10,
           }}
         >
-          <Text style={{ fontSize: 11, fontWeight: "700", color: "#FAF8F0" }}>
+          <Text style={{ fontSize: 12, fontWeight: "700", color: "#24221B" }}>
             {activity.category}
           </Text>
         </View>

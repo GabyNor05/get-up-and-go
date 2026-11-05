@@ -5,6 +5,7 @@ import { happeningService } from "@get-up-and-go/firebase/src/services/happening
 import { Happening } from "@get-up-and-go/firebase/src/types/happening";
 import EventCard from "@/components/nearby/eventCard";
 import type { SeeAllSection, HappeningWithDistance } from "../../app/(tabs)/nearby";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface Props {
   darkMode: boolean;
@@ -25,15 +26,16 @@ export default function SeeAllScreen({
   onBack,
   onSelectEvent,
 }: Props) {
+  const { t } = useAppTheme();
   const [saved, setSaved] = useState<Record<string, boolean>>({});
   const [events, setEvents] = useState<HappeningWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const bg = darkMode ? "#1A1A1A" : "#F4F0DD";
-  const surface = darkMode ? "#24221B" : "#FAF8F0";
-  const text = darkMode ? "#FAF8F0" : "#24221B";
-  const muted = "#605E55";
-  const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
+  const bg = t.bgCanvas;
+  const surface = t.bgSurface;
+  const text = t.textPrimary;
+  const muted = t.textSecondary;
+  const border = t.borderSubtle;
 
   useEffect(() => {
     async function loadSectionEvents() {
@@ -115,7 +117,7 @@ export default function SeeAllScreen({
         showsVerticalScrollIndicator={false}
       >
         {loading ? (
-          <ActivityIndicator size="large" color="#A88AED" style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color={t.textBrand} style={{ marginTop: 40 }} />
         ) : (
           <>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>

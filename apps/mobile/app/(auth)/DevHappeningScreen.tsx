@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   qrSubtitle: {
-    color: "#A88AED",
+    color: "#5B4C9E",
     fontSize: 12,
     marginVertical: 4,
     fontWeight: "600",
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(250,248,240,0.12)",
   },
   submitBtn: {
-    backgroundColor: "#A88AED",
+    backgroundColor: "#5B4C9E",
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",

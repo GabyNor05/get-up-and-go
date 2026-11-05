@@ -10,14 +10,12 @@ import {
   Dimensions,
 } from "react-native";
 import { Award, Gift, Sparkles, Bell, Check, Lock } from "lucide-react-native";
-
-interface Props {
-  darkMode?: boolean;
-}
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 const { width } = Dimensions.get("window");
 
-export default function RewardsComingSoonScreen({ darkMode = true }: Props) {
+export default function RewardsComingSoonScreen() {
+  const { isDark: darkMode } = useAppTheme();
   const [notified, setNotified] = useState(false);
 
   // Floating animation for the central badge

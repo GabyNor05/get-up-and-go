@@ -19,6 +19,7 @@ import EventCard from "@/components/nearby/eventCard";
 import SeeAllScreen from "../../components/nearby/SeeAllScreen";
 import HappeningDetailDrawer from "../../components/nearby/HappeningDetailDrawer";
 import { injectPretoriaHappenings } from "@/scripts/seedHappenings";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 export type SeeAllSection = "now" | "upcoming" | "trending";
 export type CategoryFilter = HappeningCategory | "ALL";
@@ -30,7 +31,6 @@ export interface HappeningWithDistance extends Happening {
 }
 
 interface Props {
-  darkMode?: boolean;
   onSelectEvent?: (id: string) => void;
   onSeeAll?: (section: SeeAllSection) => void;
 }
@@ -65,10 +65,10 @@ function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon
 }
 
 export default function NearbyScreen({
-  darkMode = false,
   onSelectEvent,
   onSeeAll,
 }: Props) {
+  const { isDark: darkMode, t } = useAppTheme();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<CategoryFilter>("ALL");
   const [radiusKm, setRadiusKm] = useState(10); // Increased default radius so all 7 venues display
@@ -79,11 +79,11 @@ export default function NearbyScreen({
   const [happenings, setHappenings] = useState<HappeningWithDistance[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const bg = darkMode ? "#1A1A1A" : "#F4F0DD";
-  const surface = darkMode ? "#24221B" : "#FAF8F0";
-  const text = darkMode ? "#FAF8F0" : "#24221B";
-  const muted = "#605E55";
-  const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
+  const bg = t.bgCanvas;
+  const surface = t.bgSurface;
+  const text = t.textPrimary;
+  const muted = t.textSecondary;
+  const border = t.borderSubtle;
 
   // Fetch location and Firestore data
   useEffect(() => {
@@ -212,9 +212,9 @@ export default function NearbyScreen({
               </Text>
               <Pressable
                 onPress={() => setRadiusKm((r) => Math.min(100, r + 5))}
-                style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: "#A88AED", alignItems: "center", justifyContent: "center" }}
+                style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: t.actionPrimary, alignItems: "center", justifyContent: "center" }}
               >
-                <Plus size={13} color="#FAF8F0" />
+                <Plus size={13} color={t.onActionPrimary} />
               </Pressable>
               <Pressable
                 onPress={() => setRadiusKm((r) => Math.max(1, r - 5))}
@@ -242,11 +242,11 @@ export default function NearbyScreen({
                     paddingHorizontal: 14,
                     paddingVertical: 8,
                     borderRadius: 20,
-                    backgroundColor: isSelected ? "#A88AED" : surface,
+                    backgroundColor: isSelected ? t.actionPrimary : surface,
                   }}
                 >
-                  <IconComponent size={16} color={isSelected ? "#FAF8F0" : text} />
-                  <Text style={{ color: isSelected ? "#FAF8F0" : text, fontWeight: "600" }}>
+                  <IconComponent size={16} color={isSelected ? t.onActionPrimary : text} />
+                  <Text style={{ color: isSelected ? t.onActionPrimary : text, fontWeight: "600" }}>
                     {cat.label}
                   </Text>
                 </Pressable>
@@ -256,7 +256,7 @@ export default function NearbyScreen({
         </View>
 
         {loading ? (
-          <ActivityIndicator size="large" color="#A88AED" style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color={t.textBrand} style={{ marginTop: 40 }} />
         ) : (
           <>
             <Row
@@ -327,7 +327,8 @@ function Row({
   onSelectEvent?: (id: string) => void;
   onSeeAll?: (section: SeeAllSection) => void;
 }) {
-  const text = darkMode ? "#FAF8F0" : "#24221B";
+  const { t } = useAppTheme();
+  const text = t.textPrimary;
   if (events.length === 0) return null;
   const visible = events.slice(0, ROW_LIMIT);
 
@@ -338,7 +339,7 @@ function Row({
           {title}
         </Text>
         <Pressable onPress={() => onSeeAll?.(section)}>
-          <Text style={{ fontSize: 12.5, color: "#A88AED", fontWeight: "600" }}>
+          <Text style={{ fontSize: 13, color: t.textBrand, fontWeight: "700" }}>
             See All
           </Text>
         </Pressable>

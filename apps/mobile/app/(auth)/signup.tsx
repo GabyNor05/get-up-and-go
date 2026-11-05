@@ -25,7 +25,7 @@ const COLORS = {
   muted: "#605E55",
   border: "rgba(36,34,27,0.12)",
   inputBg: "#FFFFFF",
-  primary: "#A88AED",
+  primary: "#5B4C9E",
 };
 
 const AVATAR_PUBLIC_IDS = [
@@ -254,7 +254,7 @@ export default function SignUpScreen() {
   disabled={!selectedAvatar || loading}
   style={[
     styles.submitButton,
-    { backgroundColor: selectedAvatar ? "#A88AED" : "#E2DFD2" },
+    { backgroundColor: selectedAvatar ? "#5B4C9E" : "#E2DFD2" },
   ]}
 >
   {loading ? (

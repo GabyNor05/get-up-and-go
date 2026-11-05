@@ -14,6 +14,7 @@ const CATEGORY_COLORS: Record<
   FAMILY: { accent: "#E8A84C", cardBg: { light: "#FDF7ED", dark: "#31271B" } },
   FOOD: { accent: "#6CB8E8", cardBg: { light: "#F0F7FC", dark: "#1E2B35" } },
   SPORT: { accent: "#7DC98A", cardBg: { light: "#F2FAF4", dark: "#203024" } },
+  COMMUNITY: { accent: "#A88AED", cardBg: { light: "#F6F2FC", dark: "#272236" } },
   ALL: { accent: "#A88AED", cardBg: { light: "#FAF8F0", dark: "#24221B" } },
 };
 
@@ -129,7 +130,7 @@ export default function EventCard({
               style={{
                 fontSize: 10,
                 fontWeight: "700",
-                color: accentColor,
+                color: textColor,
                 textTransform: "uppercase",
               }}
             >

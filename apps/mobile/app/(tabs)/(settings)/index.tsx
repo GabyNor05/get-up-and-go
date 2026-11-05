@@ -27,10 +27,9 @@ import {
 } from "lucide-react-native";
 import { getAuth, signOut } from "firebase/auth";
 import { useGoer } from "../../../hooks/useGoer";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface Props {
-  darkMode?: boolean;
-  toggleDark?: () => void;
   onNavigateDev?: () => void;
 }
 
@@ -38,11 +37,8 @@ type DrawerType = "edit_profile" | "preferences" | "privacy" | "help" | null;
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
-export default function SettingsScreen({
-  darkMode = false,
-  toggleDark,
-  onNavigateDev,
-}: Props) {
+export default function SettingsScreen({ onNavigateDev }: Props) {
+  const { isDark: darkMode, t, setPreference } = useAppTheme();
   const { goerId, username } = useGoer();
   const [activeDrawer, setActiveDrawer] = useState<DrawerType>(null);
 
@@ -88,13 +84,13 @@ export default function SettingsScreen({
   };
 
   // Dedicated Light Theme Palette
-  const bg = darkMode ? "#1A1A1A" : "#F4F0DD";
-  const surface = darkMode ? "#24221B" : "#FAF8F0";
-  const textPrimary = darkMode ? "#FAF8F0" : "#24221B";
-  const muted = "#605E55";
-  const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
-  const accent = "#A88AED";
-  const chipBg = darkMode ? "rgba(168,138,237,0.18)" : "rgba(168,138,237,0.14)";
+  const bg = t.bgCanvas;
+  const surface = t.bgSurface;
+  const textPrimary = t.textPrimary;
+  const muted = t.textSecondary;
+  const border = t.borderSubtle;
+  const accent = t.textBrand;
+  const chipBg = t.fillBrandSubtle;
 
   return (
     <View style={[styles.container, { backgroundColor: bg }]}>
@@ -112,8 +108,8 @@ export default function SettingsScreen({
           ]}
         >
           <View style={styles.profileHeader}>
-            <View style={[styles.avatar, { backgroundColor: accent }]}>
-              <Text style={styles.avatarText}>
+            <View style={[styles.avatar, { backgroundColor: t.actionPrimary }]}>
+              <Text style={[styles.avatarText, { color: t.onActionPrimary }]}>
                 {username ? username.charAt(0).toUpperCase() : "G"}
               </Text>
             </View>
@@ -166,31 +162,29 @@ export default function SettingsScreen({
         </View>
 
         {/* Appearance Control */}
-        {toggleDark && (
-          <View
-            style={[
-              styles.cardGroup,
-              { backgroundColor: surface, borderColor: border },
-            ]}
-          >
-            <View style={styles.rowItem}>
-              <View style={styles.rowLeft}>
-                <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
-                  <Sliders size={16} color={accent} />
-                </View>
-                <Text style={[styles.rowLabel, { color: textPrimary }]}>
-                  Dark Mode
-                </Text>
+        <View
+          style={[
+            styles.cardGroup,
+            { backgroundColor: surface, borderColor: border },
+          ]}
+        >
+          <View style={styles.rowItem}>
+            <View style={styles.rowLeft}>
+              <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
+                <Sliders size={16} color={accent} />
               </View>
-              <Switch
-                value={darkMode}
-                onValueChange={toggleDark}
-                trackColor={{ false: "rgba(36,34,27,0.15)", true: accent }}
-                thumbColor="#FAF8F0"
-              />
+              <Text style={[styles.rowLabel, { color: textPrimary }]}>
+                Dark Mode
+              </Text>
             </View>
+            <Switch
+              value={darkMode}
+              onValueChange={(on) => setPreference(on ? "dark" : "light")}
+              trackColor={{ false: t.borderSubtle, true: t.actionPrimary }}
+              thumbColor="#FAF8F0"
+            />
           </View>
-        )}
+        </View>
 
         {/* Primary Settings Links */}
         <View
@@ -336,7 +330,7 @@ export default function SettingsScreen({
                     <Switch
                       value={pushNotifications}
                       onValueChange={setPushNotifications}
-                      trackColor={{ false: "rgba(36,34,27,0.15)", true: accent }}
+                      trackColor={{ false: t.borderSubtle, true: t.actionPrimary }}
                       thumbColor="#FAF8F0"
                     />
                   </View>
@@ -357,7 +351,7 @@ export default function SettingsScreen({
                     <Switch
                       value={hideEmail}
                       onValueChange={setHideEmail}
-                      trackColor={{ false: "rgba(36,34,27,0.15)", true: accent }}
+                      trackColor={{ false: t.borderSubtle, true: t.actionPrimary }}
                       thumbColor="#FAF8F0"
                     />
                   </View>
@@ -374,7 +368,7 @@ export default function SettingsScreen({
                     <Switch
                       value={locationSharing}
                       onValueChange={setLocationSharing}
-                      trackColor={{ false: "rgba(36,34,27,0.15)", true: accent }}
+                      trackColor={{ false: t.borderSubtle, true: t.actionPrimary }}
                       thumbColor="#FAF8F0"
                     />
                   </View>
@@ -435,7 +429,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#A88AED",
+    shadowColor: "#5B4C9E",
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },

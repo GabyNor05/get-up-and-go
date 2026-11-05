@@ -26,13 +26,13 @@ const slides = [
     img: slide1,
     title: "Find Happenings\nNearby",
     body: "Step outside and explore top-rated local spots and real-time events near you.",
-    accent: "#A88AED",
+    accent: "#5B4C9E",
   },
   {
     img: slide2,
     title: "Build Your\nCircles",
     body: "Staying active is easier together. Create groups, invite friends, and hold each other accountable.",
-    accent: "#A88AED",
+    accent: "#5B4C9E",
   },
   {
     img: slide3,
@@ -246,7 +246,7 @@ export default function OnboardingScreen({
                 borderRadius: 100,
                 backgroundColor:
                   i === slideIndex
-                    ? "#A88AED"
+                    ? "#5B4C9E"
                     : darkMode
                       ? "rgba(250,248,240,0.2)"
                       : "rgba(36,34,27,0.18)",
@@ -261,7 +261,7 @@ export default function OnboardingScreen({
   onPress={handleNext}
   style={[
     styles.ctaButton,
-    { backgroundColor: isLast ? "#A6C261" : "#A88AED" },
+    { backgroundColor: isLast ? "#A6C261" : "#5B4C9E" },
   ]}
 >
   <Text

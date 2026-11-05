@@ -147,9 +147,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#24221B",
   },
   permissionTitle: { fontSize: 20, fontWeight: "700", color: "#FAF8F0", marginBottom: 12 },
-  permissionSub: { fontSize: 14, color: "#605E55", textAlign: "center", marginBottom: 24 },
+  permissionSub: { fontSize: 14, color: "#BDB8A6", textAlign: "center", marginBottom: 24 },
   grantBtn: { backgroundColor: "#A88AED", paddingVertical: 14, paddingHorizontal: 28, borderRadius: 14 },
-  grantBtnText: { color: "#FAF8F0", fontWeight: "700", fontSize: 16 },
+  grantBtnText: { color: "#1A1A1A", fontWeight: "700", fontSize: 16 },
   closeBtn: { marginTop: 16 },
-  closeBtnText: { color: "#605E55", fontSize: 14 },
+  closeBtnText: { color: "#BDB8A6", fontSize: 14 },
 });

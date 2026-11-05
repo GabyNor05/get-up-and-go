@@ -20,6 +20,7 @@ import { happeningService } from "../../../../packages/firebase/src/services/hap
 import { Happening } from "../../../../packages/firebase/src/types/happening";
 import { useGoer } from "../../hooks/useGoer"; // Adjust path as needed
 import QRScannerModal from "./QRScannerModal";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface Props {
   darkMode: boolean;
@@ -33,6 +34,7 @@ const DISMISS_THRESHOLD = 120;
 export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Props) {
   // Use Goer details instead of standard auth user
   const { goerId, username } = useGoer();
+  const { t } = useAppTheme();
 
   const visible = eventId !== null;
   const [mounted, setMounted] = useState(visible);
@@ -149,10 +151,10 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
 
   if (!mounted) return null;
 
-  const surface = darkMode ? "#24221B" : "#FAF8F0";
-  const text = darkMode ? "#FAF8F0" : "#24221B";
-  const muted = "#605E55";
-  const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
+  const surface = t.bgSurface;
+  const text = t.textPrimary;
+  const muted = t.textSecondary;
+  const border = t.borderSubtle;
   const placeholderBg = darkMode ? "#3a382c" : "#dcdcdc";
 
   const formattedDate = event?.dateTime?.toDate
@@ -202,7 +204,7 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
 
             {loading || !event ? (
               <View style={{ padding: 40, alignItems: "center" }}>
-                <ActivityIndicator size="large" color="#A88AED" />
+                <ActivityIndicator size="large" color={t.textBrand} />
               </View>
             ) : (
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
@@ -262,8 +264,8 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
                 <View style={{ paddingHorizontal: 24, paddingTop: 12, gap: 8 }}>
                   {event.locationName && (
                     <Pressable onPress={handleOpenMap} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                      <MapPin size={14} color="#A88AED" />
-                      <Text style={{ fontSize: 13, color: "#A88AED", fontWeight: "600", textDecorationLine: event.google_maps_link ? "underline" : "none" }}>
+                      <MapPin size={14} color={t.textBrand} />
+                      <Text style={{ fontSize: 13, color: t.textBrand, fontWeight: "600", textDecorationLine: event.google_maps_link ? "underline" : "none" }}>
                         {event.locationName}
                       </Text>
                     </Pressable>
@@ -289,13 +291,13 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
                       alignItems: "center",
                       justifyContent: "center",
                       gap: 8,
-                      backgroundColor: going ? "#A6C261" : "#A88AED",
+                      backgroundColor: going ? t.actionSecondary : t.actionPrimary,
                       borderRadius: 14,
                       paddingVertical: 14,
                     }}
                   >
-                    {going ? <Check size={16} color="#FAF8F0" /> : <ThumbsUp size={16} color="#FAF8F0" />}
-                    <Text style={{ color: "#FAF8F0", fontSize: 14, fontWeight: "700" }}>{going ? "Going" : "RSVP Yes"}</Text>
+                    {going ? <Check size={16} color={t.onActionSecondary} /> : <ThumbsUp size={16} color={t.onActionPrimary} />}
+                    <Text style={{ color: going ? t.onActionSecondary : t.onActionPrimary, fontSize: 14, fontWeight: "700" }}>{going ? "Going" : "RSVP Yes"}</Text>
                   </Pressable>
 
                   <Pressable
