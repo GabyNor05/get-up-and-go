@@ -38,8 +38,8 @@ export default function DashboardPage({ user, partner, onLogout }: Props) {
         ...(doc.data() as Omit<EventItem, "id">),
       }));
       setEvents(fetchedEvents);
-      if (fetchedEvents.length > 0 && !selectedEventId) {
-        setSelectedEventId(fetchedEvents[0].id);
+      if (fetchedEvents.length > 0) {
+        setSelectedEventId((current) => current || fetchedEvents[0].id);
       }
     });
 

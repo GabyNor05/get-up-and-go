@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 // Import directly from your shared packages & initialized firebase instance
 import { auth, db } from "../shared-firebase/config/firebase";
 import { User, Partner } from "../shared-firebase/types";
