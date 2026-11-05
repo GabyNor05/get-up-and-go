@@ -45,8 +45,8 @@ function RootStack() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    'Fredoka-SemiBold': require('../../../packages/shared-ui/assets/fonts/Fredoka-SemiBold.ttf'),
-    'Fredoka-Medium': require('../../../packages/shared-ui/assets/fonts/Fredoka-Medium.ttf'),
+    'Fredoka-SemiBold': require('../assets/fonts/Fredoka-SemiBold.ttf'),
+    'Fredoka-Medium': require('../assets/fonts/Fredoka-Medium.ttf'),
   });
 
   useEffect(() => {

@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Eye, EyeOff } from 'lucide-react-native';
 
-import AppLogo from '../../../../packages/shared-ui/assets/logos/transparentBgLogo.png';
+import AppLogo from '@/assets/logo.png';
 import { FormField } from '@/components/ui/FormField';
 import { useAppTheme } from '@/hooks/useAppTheme';
 import { friendlyAuthError } from '@/utils/authErrors';

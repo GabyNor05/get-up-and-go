@@ -6,7 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../../packages/firebase/src/config/firebase";
 
 // Local asset or custom logo path
-import AppLogo from "../../../packages/shared-ui/assets/logos/transparentBgLogo.png"; 
+import AppLogo from "@/assets/logo.png"; 
 
 const MIN_SPLASH_DURATION = 2000; // Minimum time logo is visible (ms)
 const EXIT_DURATION = 240;        // Fade out duration (ms)
