@@ -13,10 +13,10 @@ import { router } from "expo-router";
 import slide1 from "../../assets/onboarding/slide1.jpg";
 import slide2 from "../../assets/onboarding/slide2.jpg";
 import slide3 from "../../assets/onboarding/slide3.jpg";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 interface Props {
-  darkMode: boolean;
-  toggleDark?: () => void;
+  darkMode?: boolean;
   onFinish: () => void;
   onSkip: () => void;
 }
@@ -42,12 +42,9 @@ const slides = [
   },
 ];
 
-export default function OnboardingScreen({
-  darkMode,
-  toggleDark,
-  onFinish,
-  onSkip,
-}: Props) {
+export default function OnboardingScreen({ onFinish, onSkip }: Props) {
+  const { isDark: darkMode, t, setPreference } = useAppTheme();
+  const toggleDark = () => setPreference(darkMode ? "light" : "dark");
   const [step, setStep] = useState<"carousel" | "permissions">("carousel");
   const [slideIndex, setSlideIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -56,11 +53,11 @@ export default function OnboardingScreen({
   const fade = useRef(new Animated.Value(1)).current;
   const slide = useRef(new Animated.Value(0)).current;
 
-  const bg = darkMode ? "#1A1A1A" : "#F4F0DD";
-  const surface = darkMode ? "#24221B" : "#FAF8F0";
-  const text = darkMode ? "#FAF8F0" : "#24221B";
-  const muted = darkMode ? "#B8B6AC" : "#605E55";
-  const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
+  const bg = t.bgCanvas;
+  const surface = t.bgSurface;
+  const text = t.textPrimary;
+  const muted = t.textSecondary;
+  const border = t.borderSubtle;
 
   const goTo = (index: number) => {
     if (isAnimating || index === slideIndex) return;
@@ -245,11 +242,7 @@ export default function OnboardingScreen({
                 width: i === slideIndex ? 28 : 8,
                 borderRadius: 100,
                 backgroundColor:
-                  i === slideIndex
-                    ? "#5B4C9E"
-                    : darkMode
-                      ? "rgba(250,248,240,0.2)"
-                      : "rgba(36,34,27,0.18)",
+                  i === slideIndex ? t.actionPrimary : t.borderSubtle,
               }}
             />
           ))}
@@ -261,12 +254,12 @@ export default function OnboardingScreen({
   onPress={handleNext}
   style={[
     styles.ctaButton,
-    { backgroundColor: isLast ? "#A6C261" : "#5B4C9E" },
+    { backgroundColor: isLast ? t.actionSecondary : t.actionPrimary },
   ]}
 >
   <Text
     style={{
-      color: "#FAF8F0",
+      color: isLast ? t.onActionSecondary : t.onActionPrimary,
       fontSize: 16,
       fontWeight: "700",
       letterSpacing: 0.3,

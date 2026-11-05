@@ -2,21 +2,9 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Bookmark, MapPin, Clock, Image as ImageIcon } from "lucide-react-native";
 import { Image } from "expo-image";
 import type { Happening } from "../../../../packages/firebase/src/types/happening";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { categoryColors, radius, shadows, type CategoryKey } from "../../../../packages/shared-ui/tokens";
 
-// Palette exact match to CirclesScreen
-const CATEGORY_COLORS: Record<
-  string,
-  { accent: string; cardBg: { light: string; dark: string } }
-> = {
-  NATURE: { accent: "#A6C261", cardBg: { light: "#F5F8EC", dark: "#262B1D" } },
-  MUSIC: { accent: "#A88AED", cardBg: { light: "#F6F2FC", dark: "#272236" } },
-  GAMES: { accent: "#E87D6C", cardBg: { light: "#FDF2F0", dark: "#332220" } },
-  FAMILY: { accent: "#E8A84C", cardBg: { light: "#FDF7ED", dark: "#31271B" } },
-  FOOD: { accent: "#6CB8E8", cardBg: { light: "#F0F7FC", dark: "#1E2B35" } },
-  SPORT: { accent: "#7DC98A", cardBg: { light: "#F2FAF4", dark: "#203024" } },
-  COMMUNITY: { accent: "#A88AED", cardBg: { light: "#F6F2FC", dark: "#272236" } },
-  ALL: { accent: "#A88AED", cardBg: { light: "#FAF8F0", dark: "#24221B" } },
-};
 
 interface Props {
   event: Happening & { distanceKm?: number; locationName?: string };
@@ -35,16 +23,12 @@ export default function EventCard({
   onPress,
   width = 180, // Received dynamic width
 }: Props) {
-  const catKey = event.category ? String(event.category).toUpperCase() : "ALL";
-  const theme = CATEGORY_COLORS[catKey] ?? CATEGORY_COLORS.ALL;
+  const { t } = useAppTheme();
+  const catKey = (event.category ? String(event.category).toUpperCase() : "ALL") as CategoryKey;
+  const accentColor = categoryColors[catKey] ?? categoryColors.ALL;
 
-  const accentColor = theme.accent;
-  // Use tinted card surface for background (or set accentColor if full solid accent is desired)
-  const cardBg = darkMode ? theme.cardBg.dark : theme.cardBg.light;
-  
-  const textColor = darkMode ? "#FAF8F0" : "#24221B";
-  const mutedColor = darkMode ? "#B8B6AC" : "#605E55";
-  const borderColor = `${accentColor}40`; // 25% opacity border
+  const textColor = t.textPrimary;
+  const mutedColor = t.textSecondary;
 
   const formattedDate = event.dateTime?.toDate
     ? event.dateTime.toDate().toLocaleDateString("en-US", {
@@ -56,23 +40,15 @@ export default function EventCard({
     : "";
 
   return (
+    // Outer view carries the shadow; the inner card clips its corners.
+    // (Android draws elevation shadows through a card with no background.)
+    <View style={[styles.shadowWrap, shadows.card, { width, backgroundColor: t.bgSurface }]}>
     <Pressable
       onPress={onPress}
-      style={[styles.card]}
+      accessibilityRole="button"
+      accessibilityLabel={event.title}
+      style={[styles.card, { backgroundColor: t.bgSurface, borderColor: t.borderSubtle }]}
     >
-      {/* Decorative background accent circle */}
-      <View
-        style={{
-          position: "absolute",
-          width: 100,
-          height: 100,
-          borderRadius: 50,
-          backgroundColor: accentColor,
-          opacity: 0.15,
-          bottom: -20,
-          right: -20,
-        }}
-      />
 
       {/* Image Header */}
       <View style={styles.imageContainer}>
@@ -107,24 +83,10 @@ export default function EventCard({
 
       {/* Card Content */}
       <View style={styles.content}>
-        {/* Category Badge Pill */}
-        <View style={{ flexDirection: "row", marginBottom: 6 }}>
-          <View
-            style={{
-              backgroundColor: `${accentColor}25`,
-              borderRadius: 20,
-              paddingVertical: 3,
-              paddingHorizontal: 8,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 10,
-                fontWeight: "700",
-                color: textColor,
-                textTransform: "uppercase",
-              }}
-            >
+        {/* Category chip: colour always paired with its label */}
+        <View style={styles.chipRow}>
+          <View style={[styles.chip, { backgroundColor: accentColor }]}>
+            <Text style={styles.chipText}>
               {event.category || "General"}
             </Text>
           </View>
@@ -137,37 +99,52 @@ export default function EventCard({
 
         {/* Location & Time details */}
         <View style={styles.metaRow}>
-          <MapPin size={11} color={accentColor} />
+          <MapPin size={12} color={t.textBrand} />
           <Text style={[styles.metaText, { color: mutedColor }]} numberOfLines={1}>
             {event.locationName || "Nearby"}
           </Text>
         </View>
 
         <View style={styles.metaRow}>
-          <Clock size={11} color={accentColor} />
+          <Clock size={12} color={t.textBrand} />
           <Text style={[styles.metaText, { color: mutedColor }]} numberOfLines={1}>
             {formattedDate || "Date TBD"}
           </Text>
         </View>
       </View>
     </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: 180,         // Default target width
-    minWidth: 100,      // Never shrinks below 100
-    maxWidth: 200,      // Never grows past 200
-    borderRadius: 22,
-    borderWidth: 1.5,
-    overflow: "hidden", // Required in RN to prevent transparent background bleed
+  shadowWrap: {
+    minWidth: 100,
+    maxWidth: 220,
+    flexShrink: 0,
+    borderRadius: radius.lg,
     marginRight: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
+    marginBottom: 6,
+  },
+  card: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  chipRow: {
+    flexDirection: "row",
+    marginBottom: 6,
+  },
+  chip: {
+    borderRadius: radius.pill,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+  },
+  chipText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#24221B",
+    textTransform: "uppercase",
   },
   imageContainer: {
     height: 110,
@@ -191,7 +168,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
   },
   distanceText: {
-    fontSize: 10,
+    fontSize: 12,
     color: "#fff",
     fontWeight: "600",
   },
@@ -210,7 +187,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   title: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "700",
     marginBottom: 6,
   },
@@ -221,7 +198,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   metaText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "500",
     flex: 1,
   },
