@@ -174,9 +174,8 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
               >
                 <Text
                   style={{
-                    fontFamily: "Fredoka-SemiBold, sans-serif",
+                    fontFamily: "ADayWithoutSun",
                     fontSize: 22,
-                    fontWeight: "600",
                     color: "#A6C261",
                   }}
                 >
@@ -191,9 +190,8 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
             <View style={{ flex: 1 }}>
               <Text
                 style={{
-                  fontFamily: "Fredoka-SemiBold, sans-serif",
+                  fontFamily: "ADayWithoutSun",
                   fontSize: 20,
-                  fontWeight: "600",
                   color: text,
                 }}
               >
@@ -236,9 +234,8 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
           <View>
             <Text
               style={{
-                fontFamily: "Fredoka-SemiBold, sans-serif",
+                fontFamily: "ADayWithoutSun",
                 fontSize: 18,
-                fontWeight: "600",
                 color: text,
                 marginBottom: 12,
               }}
@@ -339,9 +336,8 @@ export default function HomeScreen({ darkMode, toggleDark }: Props) {
             >
               <Text
                 style={{
-                  fontFamily: "Fredoka-SemiBold, sans-serif",
+                  fontFamily: "ADayWithoutSun",
                   fontSize: 18,
-                  fontWeight: "600",
                   color: text,
                 }}
               >

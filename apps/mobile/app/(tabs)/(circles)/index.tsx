@@ -156,7 +156,7 @@ function BentoCard({
 
         {/* Name + member count */}
         <View>
-          <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: tall ? 20 : wide ? 18 : 16, fontWeight: "600", color: text }}>
+          <Text style={{ fontFamily: "ADayWithoutSun", fontSize: tall ? 20 : wide ? 18 : 16, color: text }}>
             {circle.name}
           </Text>
           <Text style={{ fontSize: 12, color: muted, marginTop: 2 }}>{memberCount} members</Text>

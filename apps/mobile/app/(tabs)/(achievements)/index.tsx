@@ -205,9 +205,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   title: {
-    fontFamily: "Fredoka-SemiBold",
+    fontFamily: "ADayWithoutSun",
     fontSize: 24,
-    fontWeight: "700",
     textAlign: "center",
     marginBottom: 10,
   },

@@ -239,7 +239,7 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
                     alignItems: "flex-start",
                   }}
                 >
-                  <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: 22, fontWeight: "700", color: text, flex: 1, marginRight: 12 }}>
+                  <Text style={{ fontFamily: "ADayWithoutSun", fontSize: 22, color: text, flex: 1, marginRight: 12 }}>
                     {event.title}
                   </Text>
                   <Pressable

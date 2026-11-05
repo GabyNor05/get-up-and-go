@@ -93,7 +93,7 @@ export default function CirclesMembersDrawer({ darkMode, circleId, onClose, onVi
           </View>
 
           <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }} showsVerticalScrollIndicator={false}>
-            <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: 24, fontWeight: "700", color: text, textAlign: "center", marginBottom: 16 }}>
+            <Text style={{ fontFamily: "ADayWithoutSun", fontSize: 24, color: text, textAlign: "center", marginBottom: 16 }}>
               {circle.name}
             </Text>
 

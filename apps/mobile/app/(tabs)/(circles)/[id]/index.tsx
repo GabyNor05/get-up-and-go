@@ -44,7 +44,7 @@ export default function CircleFeedScreen({ darkMode, circleId }: Props) {
           </Pressable>
         </View>
 
-        <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: 30, fontWeight: "700", color: text, textAlign: "center", marginTop: 4, marginBottom: 22 }}>
+        <Text style={{ fontFamily: "ADayWithoutSun", fontSize: 30, color: text, textAlign: "center", marginTop: 4, marginBottom: 22 }}>
           {circle.name}
         </Text>
 

@@ -404,9 +404,8 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   headerTitle: {
-    fontFamily: "Fredoka-SemiBold",
+    fontFamily: "ADayWithoutSun",
     fontSize: 28,
-    fontWeight: "700",
     marginBottom: 20,
   },
   card: {

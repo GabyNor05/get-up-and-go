@@ -88,7 +88,7 @@ export default function CreateNewCircleScreen({ darkMode, onBack, onCreate }: Pr
           <ChevronLeft size={17} color={text} />
         </Pressable>
 
-        <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: 28, fontWeight: "700", color: text, textAlign: "center", marginBottom: 18 }}>
+        <Text style={{ fontFamily: "ADayWithoutSun", fontSize: 28, color: text, textAlign: "center", marginBottom: 18 }}>
           New Circle
         </Text>
 
@@ -114,7 +114,7 @@ export default function CreateNewCircleScreen({ darkMode, onBack, onCreate }: Pr
             </View>
           </View>
           <View style={{ marginTop: 10 }}>
-            <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: 16, fontWeight: "600", color: text }} numberOfLines={1}>
+            <Text style={{ fontFamily: "ADayWithoutSun", fontSize: 16, color: text }} numberOfLines={1}>
               {name.trim() || "Your circle name"}
             </Text>
             <Text style={{ fontSize: 12, color: muted, marginTop: 2 }}>1 member</Text>
