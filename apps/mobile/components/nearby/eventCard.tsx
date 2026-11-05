@@ -58,16 +58,7 @@ export default function EventCard({
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        {
-          width,
-          backgroundColor: cardBg, // Tinted surface background
-          borderColor: borderColor,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
-          overflow: "hidden"
-        },
-      ]}
+      style={[styles.card]}
     >
       {/* Decorative background accent circle */}
       <View

@@ -123,10 +123,7 @@ export default function DevHappeningScreen() {
         <Pressable
           onPress={handleCreateHappening}
           disabled={loading}
-          style={({ pressed }) => [
-            styles.submitBtn,
-            pressed && { opacity: 0.8 },
-          ]}
+          style={[styles.submitBtn]}
         >
           {loading ? (
             <ActivityIndicator color="#FAF8F0" />

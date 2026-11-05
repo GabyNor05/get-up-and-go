@@ -57,7 +57,9 @@ export default function TabLayout() {
         tabBarActiveTintColor: t.textBrand,
         tabBarInactiveTintColor: t.textSecondary,
         tabBarItemStyle: styles.tabBarItem,
-        sceneStyle: { backgroundColor: t.bgCanvas },
+        tabBarIconStyle: styles.tabBarIcon,
+        // Every tab screen starts below the status bar / notch
+        sceneStyle: { backgroundColor: t.bgCanvas, paddingTop: insets.top },
         tabBarStyle: [
           styles.dock,
           {
@@ -99,6 +101,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderTopWidth: 0,
     paddingHorizontal: 8,
+    paddingTop: 0,
     paddingBottom: 0,
     overflow: 'visible',
     shadowColor: '#24221B',
@@ -110,8 +113,18 @@ const styles = StyleSheet.create({
   tabBarItem: {
     overflow: 'visible',
     height: DOCK_HEIGHT,
+    paddingTop: 0,
+    paddingBottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // The default icon wrapper is ~28px tall and top-anchored, which pushed
+  // our taller icon+label off-centre. Let it fill the dock instead.
+  tabBarIcon: {
+    width: '100%',
+    height: DOCK_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   homePill: {
     width: 56,

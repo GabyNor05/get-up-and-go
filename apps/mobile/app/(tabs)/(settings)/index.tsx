@@ -133,11 +133,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
           <View style={styles.actionRow}>
             <Pressable
               onPress={() => openDrawer("edit_profile")}
-              style={({ pressed }) => [
-                styles.actionBtn,
-                { backgroundColor: chipBg },
-                pressed && { opacity: 0.75 },
-              ]}
+              style={[styles.actionBtn, { backgroundColor: chipBg }]}
             >
               <Pencil size={14} color={accent} />
               <Text style={[styles.actionBtnText, { color: accent }]}>
@@ -147,11 +143,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
 
             <Pressable
               onPress={handleShareProfile}
-              style={({ pressed }) => [
-                styles.actionBtn,
-                { backgroundColor: chipBg },
-                pressed && { opacity: 0.75 },
-              ]}
+              style={[styles.actionBtn, { backgroundColor: chipBg }]}
             >
               <Share2 size={14} color={accent} />
               <Text style={[styles.actionBtnText, { color: accent }]}>
@@ -195,11 +187,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
         >
           <Pressable
             onPress={() => openDrawer("preferences")}
-            style={({ pressed }) => [
-              styles.rowItem,
-              pressed && styles.pressed,
-              { borderBottomWidth: 1, borderColor: border },
-            ]}
+            style={[styles.rowItem, { borderBottomWidth: 1, borderColor: border }]}
           >
             <View style={styles.rowLeft}>
               <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
@@ -214,11 +202,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
 
           <Pressable
             onPress={() => openDrawer("privacy")}
-            style={({ pressed }) => [
-              styles.rowItem,
-              pressed && styles.pressed,
-              { borderBottomWidth: 1, borderColor: border },
-            ]}
+            style={[styles.rowItem, { borderBottomWidth: 1, borderColor: border }]}
           >
             <View style={styles.rowLeft}>
               <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
@@ -233,7 +217,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
 
           <Pressable
             onPress={() => openDrawer("help")}
-            style={({ pressed }) => [styles.rowItem, pressed && styles.pressed]}
+            style={[styles.rowItem]}
           >
             <View style={styles.rowLeft}>
               <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
@@ -257,10 +241,7 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
           >
             <Pressable
               onPress={onNavigateDev}
-              style={({ pressed }) => [
-                styles.rowItem,
-                pressed && styles.pressed,
-              ]}
+              style={[styles.rowItem]}
             >
               <View style={styles.rowLeft}>
                 <View style={[styles.iconBadge, { backgroundColor: chipBg }]}>
@@ -278,13 +259,10 @@ export default function SettingsScreen({ onNavigateDev }: Props) {
         {/* Logout Button */}
         <Pressable
           onPress={handleLogout}
-          style={({ pressed }) => [
-            styles.logoutBtn,
-            pressed && { opacity: 0.8 },
-          ]}
+          style={[styles.logoutBtn, { backgroundColor: t.fillDangerSubtle, borderColor: t.danger }]}
         >
-          <LogOut size={16} color="#E8786C" />
-          <Text style={styles.logoutText}>Logout</Text>
+          <LogOut size={16} color={t.danger} />
+          <Text style={[styles.logoutText, { color: t.danger }]}>Log out</Text>
         </Pressable>
       </ScrollView>
 
@@ -394,7 +372,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingTop: 56,
+    paddingTop: 16,
     paddingBottom: 120,
   },
   headerTitle: {
