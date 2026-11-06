@@ -7,8 +7,9 @@ import {
   buildDemoHappenings,
   clearDemoHappenings,
   generateDemoHappenings,
-} from "../shared-firebase/demo/demoHappenings";
-import { categoryColor, formatDay, titleCase } from "../lib/format";
+} from "../../shared-firebase/demo/demoHappenings";
+import { formatDay } from "../../lib/format";
+import CategoryTag from "../../components/CategoryTag";
 
 interface Center {
   key: string;
@@ -24,7 +25,7 @@ function todayInput(): string {
 }
 
 /** Admin-only: fill an area with realistic demo Happenings at real venues */
-export default function AdminPage() {
+export default function AdminDemo() {
   const [center, setCenter] = useState<Center>(DEMO_AREAS[0]);
   const [customLat, setCustomLat] = useState(String(DEMO_AREAS[0].latitude));
   const [customLng, setCustomLng] = useState(String(DEMO_AREAS[0].longitude));
@@ -114,8 +115,8 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="gng-create">
-      <section className="gng-panel gng-form">
+    <div className="gng-create gng-page" style={{ display: "grid" }}>
+      <section className="gng-panel gng-form gng-scroll" style={{ height: "100%" }}>
         <p className="gng-muted" style={{ margin: 0 }}>
           Fills the app with made-up Happenings at real venues around Centurion and Irene (Irene Farm, Cappuccino's
           Southdowns, Big Red Barn, Smuts House…), on the weekdays they'd realistically run. Running it again
@@ -206,7 +207,7 @@ export default function AdminPage() {
         </div>
       </section>
 
-      <aside className="gng-panel" aria-label="Preview">
+      <aside className="gng-panel gng-scroll" aria-label="Preview" style={{ height: "100%" }}>
         <div className="gng-panel-head">
           <h2>Preview</h2>
           <span className="gng-muted">{preview.length} Happenings</span>
@@ -220,9 +221,7 @@ export default function AdminPage() {
               <div className="gng-upnext">
                 {group.items.map(({ id, data }) => (
                   <div key={id} className="gng-upnext-row">
-                    <span className="gng-cat" style={{ background: categoryColor(data.category as string) }}>
-                      {titleCase(data.category as string)}
-                    </span>
+                    <CategoryTag category={data.category as string} />
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div className="gng-row-title">{data.title as string}</div>
                       <div className="gng-row-sub">
