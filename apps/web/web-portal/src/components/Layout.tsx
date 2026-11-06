@@ -1,66 +1,52 @@
 import React from "react";
-import { CalendarDays, LayoutDashboard, LogOut, PlusCircle, QrCode, Search, Wand2, type LucideIcon } from "lucide-react";
+import { LogOut, Search, type LucideIcon } from "lucide-react";
 
-export type View = "overview" | "happenings" | "create" | "qr" | "admin";
-
-interface NavItem {
-  view: View;
+export interface NavItem<V extends string> {
+  view: V;
   label: string;
   Icon: LucideIcon;
+  badge?: number;
 }
 
-const PARTNER_NAV: NavItem[] = [
-  { view: "overview", label: "Overview", Icon: LayoutDashboard },
-  { view: "happenings", label: "My Happenings", Icon: CalendarDays },
-  { view: "create", label: "Create Happening", Icon: PlusCircle },
-  { view: "qr", label: "Venue QR", Icon: QrCode },
-];
+export interface NavSection<V extends string> {
+  label: string;
+  items: NavItem<V>[];
+}
 
-const ADMIN_NAV: NavItem[] = [{ view: "admin", label: "Demo Happenings", Icon: Wand2 }];
-
-interface LayoutProps {
-  view: View;
-  onNavigate: (view: View) => void;
+interface LayoutProps<V extends string> {
+  view: V;
+  sections: NavSection<V>[];
+  onNavigate: (view: V) => void;
+  portalLabel: string;
   title: string;
   subtitle?: string;
-  venueName: string;
-  roleLabel: string;
-  isAdmin: boolean;
+  accountName: string;
+  accountRole: string;
   search?: string;
   onSearch?: (value: string) => void;
+  searchPlaceholder?: string;
   actions?: React.ReactNode;
   onLogout: () => void;
   children: React.ReactNode;
 }
 
-export default function Layout({
+/** Fixed-height dashboard shell: sidebar + top bar; only inner panels scroll */
+export default function Layout<V extends string>({
   view,
+  sections,
   onNavigate,
+  portalLabel,
   title,
   subtitle,
-  venueName,
-  roleLabel,
-  isAdmin,
+  accountName,
+  accountRole,
   search,
   onSearch,
+  searchPlaceholder = "Search",
   actions,
   onLogout,
   children,
-}: LayoutProps) {
-  const renderNav = (items: NavItem[]) =>
-    items.map(({ view: target, label, Icon }) => (
-      <button
-        key={target}
-        type="button"
-        className="gng-nav-item"
-        aria-current={view === target ? "page" : undefined}
-        onClick={() => onNavigate(target)}
-      >
-        <Icon size={20} aria-hidden="true" />
-        <span>{label}</span>
-      </button>
-    ));
-
+}: LayoutProps<V>) {
   return (
     <div className="gng-shell">
       <aside className="gng-sidebar">
@@ -68,34 +54,39 @@ export default function Layout({
           <img src={`${process.env.PUBLIC_URL}/logo.png`} alt="" />
           <div>
             <div className="gng-brand-name">Get Up &amp; Go</div>
-            <div className="gng-brand-sub">Partner portal</div>
+            <div className="gng-brand-sub">{portalLabel}</div>
           </div>
         </div>
 
-        <div>
-          <p className="gng-nav-label">Venue</p>
-          <nav className="gng-nav" aria-label="Partner">
-            {renderNav(PARTNER_NAV)}
-          </nav>
-        </div>
-
-        {isAdmin ? (
-          <div>
-            <p className="gng-nav-label">Admin</p>
-            <nav className="gng-nav" aria-label="Admin">
-              {renderNav(ADMIN_NAV)}
+        {sections.map((section) => (
+          <div key={section.label}>
+            <p className="gng-nav-label">{section.label}</p>
+            <nav className="gng-nav" aria-label={section.label}>
+              {section.items.map(({ view: target, label, Icon, badge }) => (
+                <button
+                  key={target}
+                  type="button"
+                  className="gng-nav-item"
+                  aria-current={view === target ? "page" : undefined}
+                  onClick={() => onNavigate(target)}
+                >
+                  <Icon size={20} aria-hidden="true" />
+                  <span style={{ flex: 1 }}>{label}</span>
+                  {badge ? <span className="gng-badge">{badge}</span> : null}
+                </button>
+              ))}
             </nav>
           </div>
-        ) : null}
+        ))}
 
         <div className="gng-sidebar-foot">
           <div className="gng-venue-card">
             <div className="gng-venue-avatar" aria-hidden="true">
-              {venueName.charAt(0).toUpperCase()}
+              {accountName.charAt(0).toUpperCase()}
             </div>
             <div style={{ minWidth: 0 }}>
-              <div className="gng-venue-name">{venueName}</div>
-              <div className="gng-brand-sub">{roleLabel}</div>
+              <div className="gng-venue-name">{accountName}</div>
+              <div className="gng-brand-sub">{accountRole}</div>
             </div>
           </div>
           <button type="button" className="gng-nav-item" onClick={onLogout}>
@@ -117,10 +108,10 @@ export default function Layout({
                 <Search size={18} aria-hidden="true" />
                 <input
                   type="search"
-                  placeholder="Search Happenings"
+                  placeholder={searchPlaceholder}
                   value={search ?? ""}
                   onChange={(e) => onSearch(e.target.value)}
-                  aria-label="Search Happenings"
+                  aria-label={searchPlaceholder}
                 />
               </label>
             ) : null}

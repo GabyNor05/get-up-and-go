@@ -15,8 +15,6 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   COMMUNITY: "#A88AED",
 };
 
-/** Emails that always get the Admin page (plus any users.role === "admin") */
-export const ADMIN_EMAILS = ["gabynorris616@gmail.com", "gabby.norris616@gmail.com"];
 
 export const millis = (h: Happening): number => h.dateTime?.toMillis?.() ?? 0;
 
@@ -52,4 +50,18 @@ export function downloadCanvas(canvasId: string, fileName: string): void {
   document.body.appendChild(link);
   link.click();
   link.remove();
+}
+
+/**
+ * Softer category tag: a translucent tint of the category colour with dark
+ * text and a solid dot, so the colour still reads but isn't shouting.
+ */
+export function categoryTagStyle(category: string | undefined): { background: string; dot: string } {
+  const color = categoryColor(category);
+  return { background: `${color}33`, dot: color };
+}
+
+export function formatDate(ms: number | undefined): string {
+  if (!ms) return "—";
+  return new Date(ms).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" });
 }
