@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { GeoPoint, Timestamp } from "firebase/firestore";
 import { AlertCircle, CalendarDays, Loader2, MapPin } from "lucide-react";
 
-import type { Happening, Partner, User } from "../shared-firebase/types";
-import { happeningService } from "../shared-firebase/services/happeningService";
-import { CATEGORIES, type Category, categoryColor, titleCase } from "../lib/format";
+import type { Happening, Partner, User } from "../../shared-firebase/types";
+import { happeningService } from "../../shared-firebase/services/happeningService";
+import { CATEGORIES, type Category, titleCase } from "../../lib/format";
+import CategoryTag from "../../components/CategoryTag";
 
 interface CreateHappeningPageProps {
   user: User;
@@ -30,7 +31,7 @@ interface FormState {
 const DEFAULT_COORDS = { latitude: -25.8795, longitude: 28.2005 }; // Southdowns, Centurion
 const DEFAULT_THUMBNAIL = "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?q=80&w=800";
 
-export default function CreateHappeningPage({ user, partner, venueName, onCreated, onCancel }: CreateHappeningPageProps) {
+export default function CreateHappening({ user, partner, venueName, onCreated, onCancel }: CreateHappeningPageProps) {
   const emptyForm = (): FormState => ({
     title: "",
     description: "",
@@ -109,8 +110,8 @@ export default function CreateHappeningPage({ user, partner, venueName, onCreate
       : "Pick a date and time";
 
   return (
-    <div className="gng-create">
-      <form className="gng-panel gng-form" onSubmit={handleSubmit}>
+    <div className="gng-create gng-page" style={{ display: "grid" }}>
+      <form className="gng-panel gng-form gng-scroll" onSubmit={handleSubmit} style={{ height: "100%" }}>
         {error ? (
           <div className="gng-alert gng-alert-danger" role="alert">
             <AlertCircle size={18} aria-hidden="true" /> {error}
@@ -186,8 +187,8 @@ export default function CreateHappeningPage({ user, partner, venueName, onCreate
         <div className="gng-phone-card">
           <img src={form.thumbnail_url.trim() || DEFAULT_THUMBNAIL} alt="" />
           <div className="gng-phone-body">
-            <span className="gng-cat" style={{ background: categoryColor(form.category), alignSelf: "flex-start" }}>
-              {titleCase(form.category)}
+            <span style={{ alignSelf: "flex-start" }}>
+              <CategoryTag category={form.category} />
             </span>
             <h3>{form.title.trim() || "Your Happening title"}</h3>
             <span className="gng-row-sub" style={{ display: "flex", gap: 6, alignItems: "center" }}>

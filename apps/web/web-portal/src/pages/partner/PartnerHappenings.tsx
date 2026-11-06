@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { AlertCircle, ExternalLink, QrCode, Trash2 } from "lucide-react";
 
-import type { Happening } from "../shared-firebase/types";
-import { happeningService } from "../shared-firebase/services/happeningService";
-import { categoryColor, formatDateTime, millis, titleCase } from "../lib/format";
+import type { Happening } from "../../shared-firebase/types";
+import { happeningService } from "../../shared-firebase/services/happeningService";
+import CategoryTag from "../../components/CategoryTag";
+import { formatDateTime, millis, titleCase } from "../../lib/format";
 
-interface HappeningsPageProps {
+interface PartnerHappeningsProps {
   happenings: Happening[];
   loading: boolean;
   error: string | null;
@@ -16,7 +17,7 @@ interface HappeningsPageProps {
 
 type Filter = "upcoming" | "past" | "all";
 
-export default function HappeningsPage({ happenings, loading, error, search, onShowQr, onCreate }: HappeningsPageProps) {
+export default function PartnerHappenings({ happenings, loading, error, search, onShowQr, onCreate }: PartnerHappeningsProps) {
   const [filter, setFilter] = useState<Filter>("upcoming");
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -43,7 +44,8 @@ export default function HappeningsPage({ happenings, loading, error, search, onS
   };
 
   return (
-    <section className="gng-panel">
+    <div className="gng-page">
+    <section className="gng-panel gng-panel-fill">
       <div className="gng-panel-head">
         <div className="gng-segment" role="group" aria-label="Show">
           {(["upcoming", "past", "all"] as Filter[]).map((option) => (
@@ -78,7 +80,7 @@ export default function HappeningsPage({ happenings, loading, error, search, onS
           ) : null}
         </div>
       ) : (
-        <div className="gng-table-wrap">
+        <div className="gng-table-wrap gng-scroll">
           <table className="gng-table">
             <thead>
               <tr>
@@ -107,9 +109,7 @@ export default function HappeningsPage({ happenings, loading, error, search, onS
                     </td>
                     <td style={{ whiteSpace: "nowrap" }}>{formatDateTime(h)}</td>
                     <td>
-                      <span className="gng-cat" style={{ background: categoryColor(h.category) }}>
-                        {titleCase(h.category ?? "COMMUNITY")}
-                      </span>
+                      <CategoryTag category={h.category} />
                     </td>
                     <td className="gng-num">{h.rsvps?.length ?? 0}</td>
                     <td className="gng-num">{h.attendees?.length ?? 0}</td>
@@ -144,7 +144,7 @@ export default function HappeningsPage({ happenings, loading, error, search, onS
                         </div>
                       ) : (
                         <div className="gng-actions" style={{ flexWrap: "nowrap", justifyContent: "flex-end" }}>
-                          <button type="button" className="gng-icon-btn" title="Show QR" aria-label={`Show QR for ${h.title}`} onClick={() => onShowQr(h.id)}>
+                          <button type="button" className="gng-icon-btn" title="Venue QR" aria-label="Open venue QR" onClick={() => onShowQr(h.id)}>
                             <QrCode size={18} aria-hidden="true" />
                           </button>
                           {h.google_maps_link ? (
@@ -172,5 +172,6 @@ export default function HappeningsPage({ happenings, loading, error, search, onS
         </div>
       )}
     </section>
+    </div>
   );
 }
