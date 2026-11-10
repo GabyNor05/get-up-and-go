@@ -4,15 +4,16 @@ import { Trash2 } from "lucide-react";
 
 import { db } from "../../shared-firebase/config/firebase";
 import { formatDate } from "../../lib/format";
-import { tsMillis, type CircleDoc, type UserDoc } from "../../lib/adminData";
+import { tsMillis, type CircleDoc, type DetailRef, type UserDoc } from "../../lib/adminData";
 
 interface AdminCirclesProps {
   circles: CircleDoc[];
   users: UserDoc[];
   search: string;
+  onOpen: (detail: DetailRef) => void;
 }
 
-export default function AdminCircles({ circles, users, search }: AdminCirclesProps) {
+export default function AdminCircles({ circles, users, search, onOpen }: AdminCirclesProps) {
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,7 +76,7 @@ export default function AdminCircles({ circles, users, search }: AdminCirclesPro
                   const members = c.goer_ids?.length ?? 0;
                   const max = c.max_size ?? 20;
                   return (
-                    <tr key={c.id}>
+                    <tr key={c.id} className="gng-row-click" tabIndex={0} onClick={() => onOpen({ kind: "circle", id: c.id })} onKeyDown={(e) => e.key === "Enter" && onOpen({ kind: "circle", id: c.id })}>
                       <td>
                         <div className="gng-cell-happening" style={{ minWidth: 200 }}>
                           <span className="gng-avatar-sm" style={{ background: `${c.accent ?? "#A88AED"}33`, fontSize: 16 }}>
@@ -104,7 +105,7 @@ export default function AdminCircles({ circles, users, search }: AdminCirclesPro
                         </div>
                       </td>
                       <td style={{ whiteSpace: "nowrap" }}>{formatDate(tsMillis(c.created_at))}</td>
-                      <td>
+                      <td onClick={(e) => e.stopPropagation()}>
                         {confirmId === c.id ? (
                           <div className="gng-actions" style={{ flexWrap: "nowrap" }}>
                             <button type="button" className="gng-btn gng-btn-ghost gng-btn-small" onClick={() => setConfirmId(null)}>

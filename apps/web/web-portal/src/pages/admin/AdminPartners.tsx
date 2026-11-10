@@ -4,18 +4,19 @@ import { Ban, ExternalLink, RotateCcw } from "lucide-react";
 
 import { db } from "../../shared-firebase/config/firebase";
 import { formatDate } from "../../lib/format";
-import { tsMillis, type HappeningDoc, type PartnerDoc, type UserDoc } from "../../lib/adminData";
+import { tsMillis, type DetailRef, type HappeningDoc, type PartnerDoc, type UserDoc } from "../../lib/adminData";
 
 interface AdminPartnersProps {
   users: UserDoc[];
   partners: PartnerDoc[];
   happenings: HappeningDoc[];
   search: string;
+  onOpen: (detail: DetailRef) => void;
 }
 
 type Filter = "all" | "active" | "suspended";
 
-export default function AdminPartners({ users, partners, happenings, search }: AdminPartnersProps) {
+export default function AdminPartners({ users, partners, happenings, search, onOpen }: AdminPartnersProps) {
   const [filter, setFilter] = useState<Filter>("all");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +94,7 @@ export default function AdminPartners({ users, partners, happenings, search }: A
                 </tr>
               ) : (
                 rows.map((row) => (
-                  <tr key={row.user.id}>
+                  <tr key={row.user.id} className="gng-row-click" tabIndex={0} onClick={() => onOpen({ kind: "partner", id: row.user.uid ?? row.user.id })} onKeyDown={(e) => e.key === "Enter" && onOpen({ kind: "partner", id: row.user.uid ?? row.user.id })}>
                     <td>
                       <div className="gng-cell-happening" style={{ minWidth: 220 }}>
                         <span className="gng-avatar-sm">{row.venue.charAt(0).toUpperCase()}</span>
@@ -113,7 +114,7 @@ export default function AdminPartners({ users, partners, happenings, search }: A
                         {row.suspended ? "Suspended" : "Active"}
                       </span>
                     </td>
-                    <td>
+                    <td onClick={(e) => e.stopPropagation()}>
                       <div className="gng-actions" style={{ flexWrap: "nowrap", justifyContent: "flex-end" }}>
                         {row.partner?.google_maps_link ? (
                           <a className="gng-icon-btn" href={row.partner.google_maps_link} target="_blank" rel="noreferrer" title="Open in Google Maps" aria-label={`Open ${row.venue} in Google Maps`}>

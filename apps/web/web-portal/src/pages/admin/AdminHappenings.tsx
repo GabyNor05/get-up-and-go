@@ -4,18 +4,20 @@ import { ExternalLink, Trash2 } from "lucide-react";
 import { happeningService } from "../../shared-firebase/services/happeningService";
 import CategoryTag from "../../components/CategoryTag";
 import { formatDateTime, millis } from "../../lib/format";
-import type { HappeningDoc } from "../../lib/adminData";
+import { isDemoDoc } from "../../lib/demoSeed";
+import type { DetailRef, HappeningDoc } from "../../lib/adminData";
 
 interface AdminHappeningsProps {
   happenings: HappeningDoc[];
   venueNames: Map<string, string>;
   search: string;
+  onOpen: (detail: DetailRef) => void;
 }
 
 type Filter = "upcoming" | "past" | "all";
 type Source = "all" | "partners" | "demo";
 
-export default function AdminHappenings({ happenings, venueNames, search }: AdminHappeningsProps) {
+export default function AdminHappenings({ happenings, venueNames, search, onOpen }: AdminHappeningsProps) {
   const [filter, setFilter] = useState<Filter>("upcoming");
   const [source, setSource] = useState<Source>("all");
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function AdminHappenings({ happenings, venueNames, search }: Admi
     const term = search.trim().toLowerCase();
     return happenings
       .filter((h) => (filter === "all" ? true : filter === "upcoming" ? millis(h) >= now : millis(h) < now))
-      .filter((h) => (source === "all" ? true : source === "demo" ? h.demo : !h.demo))
+      .filter((h) => (source === "all" ? true : source === "demo" ? isDemoDoc(h) : !isDemoDoc(h)))
       .filter((h) => !term || `${h.title} ${h.locationName} ${h.category} ${venueNames.get(h.partner_id) ?? ""}`.toLowerCase().includes(term))
       .sort((a, b) => (filter === "past" ? millis(b) - millis(a) : millis(a) - millis(b)));
   }, [happenings, filter, source, search, venueNames, now]);
@@ -88,7 +90,7 @@ export default function AdminHappenings({ happenings, venueNames, search }: Admi
                 </tr>
               ) : (
                 rows.map((h) => (
-                  <tr key={h.id}>
+                  <tr key={h.id} className="gng-row-click" tabIndex={0} onClick={() => onOpen({ kind: "happening", id: h.id })} onKeyDown={(e) => e.key === "Enter" && onOpen({ kind: "happening", id: h.id })}>
                     <td>
                       <div className="gng-cell-happening">
                         <img src={h.thumbnail_url} alt="" loading="lazy" />
@@ -99,11 +101,10 @@ export default function AdminHappenings({ happenings, venueNames, search }: Admi
                       </div>
                     </td>
                     <td>
-                      {h.demo ? (
-                        <span className="gng-pill gng-pill-muted">Demo</span>
-                      ) : (
-                        venueNames.get(h.partner_id) ?? <span className="gng-muted">Unknown</span>
-                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        {venueNames.get(h.partner_id) ?? <span className="gng-muted">{h.demo ? "Demo venue" : "Unknown"}</span>}
+                        {isDemoDoc(h) ? <span className="gng-pill gng-pill-muted">Demo</span> : null}
+                      </div>
                     </td>
                     <td style={{ whiteSpace: "nowrap" }}>{formatDateTime(h)}</td>
                     <td>
@@ -111,7 +112,7 @@ export default function AdminHappenings({ happenings, venueNames, search }: Admi
                     </td>
                     <td className="gng-num">{h.rsvps?.length ?? 0}</td>
                     <td className="gng-num">{h.attendees?.length ?? 0}</td>
-                    <td>
+                    <td onClick={(e) => e.stopPropagation()}>
                       {confirmId === h.id ? (
                         <div className="gng-actions" style={{ flexWrap: "nowrap" }}>
                           <button type="button" className="gng-btn gng-btn-ghost gng-btn-small" onClick={() => setConfirmId(null)}>

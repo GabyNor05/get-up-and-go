@@ -4,7 +4,8 @@ import { Building2, CalendarDays, LayoutDashboard, LifeBuoy, Users, UsersRound, 
 import type { User } from "../../shared-firebase/types";
 import Layout, { type NavSection } from "../../components/Layout";
 import { useLiveCollection } from "../../hooks/useLiveCollection";
-import type { CircleDoc, GoerDoc, HappeningDoc, PartnerDoc, SupportTicket, UserDoc } from "../../lib/adminData";
+import type { CircleDoc, DetailRef, GoerDoc, HappeningDoc, PartnerDoc, SupportTicket, UserDoc } from "../../lib/adminData";
+import AdminDetails from "./details/AdminDetails";
 import AdminOverview from "./AdminOverview";
 import AdminPartners from "./AdminPartners";
 import AdminHappenings from "./AdminHappenings";
@@ -27,12 +28,13 @@ const TITLES: Record<AdminView, { title: string; subtitle: string; search?: stri
   goers: { title: "Goers", subtitle: "People using the app", search: "Search Goers" },
   circles: { title: "Circles", subtitle: "Groups getting out together", search: "Search Circles" },
   support: { title: "Support tickets", subtitle: "Messages from Goers and partners", search: "Search tickets" },
-  demo: { title: "Demo Happenings", subtitle: "Fill an area with realistic Happenings for showcases" },
+  demo: { title: "Demo generator", subtitle: "Fill the database with partners, Happenings, Goers, Circles and tickets for showcases" },
 };
 
 export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [view, setView] = useState<AdminView>("overview");
   const [search, setSearch] = useState("");
+  const [detail, setDetail] = useState<DetailRef>(null);
 
   const users = useLiveCollection<UserDoc>("users");
   const partners = useLiveCollection<PartnerDoc>("partners");
@@ -64,7 +66,7 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
         { view: "support", label: "Support tickets", Icon: LifeBuoy, badge: openTickets },
       ],
     },
-    { label: "Tools", items: [{ view: "demo", label: "Demo Happenings", Icon: Wand2 }] },
+    { label: "Tools", items: [{ view: "demo", label: "Demo generator", Icon: Wand2 }] },
   ];
 
   const navigate = (next: AdminView) => {
@@ -104,16 +106,29 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
           tickets={tickets.items}
           venueNames={venueNames}
           onOpen={navigate}
+          onDetail={setDetail}
         />
       )}
       {view === "partners" && (
-        <AdminPartners users={users.items} partners={partners.items} happenings={happenings.items} search={search} />
+        <AdminPartners users={users.items} partners={partners.items} happenings={happenings.items} search={search} onOpen={setDetail} />
       )}
-      {view === "happenings" && <AdminHappenings happenings={happenings.items} venueNames={venueNames} search={search} />}
-      {view === "goers" && <AdminGoers users={users.items} goers={goers.items} search={search} />}
-      {view === "circles" && <AdminCircles circles={circles.items} users={users.items} search={search} />}
+      {view === "happenings" && <AdminHappenings happenings={happenings.items} venueNames={venueNames} search={search} onOpen={setDetail} />}
+      {view === "goers" && <AdminGoers users={users.items} goers={goers.items} search={search} onOpen={setDetail} />}
+      {view === "circles" && <AdminCircles circles={circles.items} users={users.items} search={search} onOpen={setDetail} />}
       {view === "support" && <AdminSupport tickets={tickets.items} loading={tickets.loading} search={search} />}
-      {view === "demo" && <AdminDemo />}
+      {view === "demo" && (
+        <AdminDemo
+          ctx={{ users: users.items, goers: goers.items, partners: partners.items, circles: circles.items, happenings: happenings.items }}
+        />
+      )}
+
+      <AdminDetails
+        detail={detail}
+        data={{ users: users.items, goers: goers.items, partners: partners.items, circles: circles.items, happenings: happenings.items }}
+        venueNames={venueNames}
+        onOpen={setDetail}
+        onClose={() => setDetail(null)}
+      />
     </Layout>
   );
 }

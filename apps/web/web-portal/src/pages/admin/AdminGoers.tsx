@@ -1,29 +1,18 @@
 import React, { useMemo, useState } from "react";
 
 import { formatDate } from "../../lib/format";
-import { tsMillis, type GoerDoc, type UserDoc } from "../../lib/adminData";
+import { levelFor, tsMillis, type DetailRef, type GoerDoc, type UserDoc } from "../../lib/adminData";
 
 interface AdminGoersProps {
   users: UserDoc[];
   goers: GoerDoc[];
   search: string;
+  onOpen: (detail: DetailRef) => void;
 }
 
 type Sort = "gp" | "monthly" | "name" | "newest";
 
-const LEVELS = [
-  { level: 1, title: "Starter", target: 0 },
-  { level: 2, title: "Explorer", target: 150 },
-  { level: 3, title: "Regular", target: 400 },
-  { level: 4, title: "Trailblazer", target: 800 },
-  { level: 5, title: "Local Legend", target: 1500 },
-];
-
-function levelFor(gp: number) {
-  return [...LEVELS].reverse().find((l) => gp >= l.target) ?? LEVELS[0];
-}
-
-export default function AdminGoers({ users, goers, search }: AdminGoersProps) {
+export default function AdminGoers({ users, goers, search, onOpen }: AdminGoersProps) {
   const [sort, setSort] = useState<Sort>("gp");
 
   const rows = useMemo(() => {
@@ -92,7 +81,7 @@ export default function AdminGoers({ users, goers, search }: AdminGoersProps) {
                 rows.map((row) => {
                   const level = levelFor(row.total);
                   return (
-                    <tr key={row.user.id}>
+                    <tr key={row.user.id} className="gng-row-click" tabIndex={0} onClick={() => onOpen({ kind: "goer", id: row.user.uid ?? row.user.id })} onKeyDown={(e) => e.key === "Enter" && onOpen({ kind: "goer", id: row.user.uid ?? row.user.id })}>
                       <td>
                         <div className="gng-cell-happening" style={{ minWidth: 220 }}>
                           <span className="gng-avatar-sm">{row.user.username.charAt(0).toUpperCase()}</span>

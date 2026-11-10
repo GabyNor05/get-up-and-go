@@ -30,3 +30,23 @@ export const tsMillis = (value: unknown): number => {
   const ts = value as { toMillis?: () => number } | undefined;
   return ts?.toMillis?.() ?? 0;
 };
+
+/** Same thresholds as the app's `levels` collection */
+export const LEVELS = [
+  { level: 1, title: "Starter", target: 0 },
+  { level: 2, title: "Explorer", target: 150 },
+  { level: 3, title: "Regular", target: 400 },
+  { level: 4, title: "Trailblazer", target: 800 },
+  { level: 5, title: "Local Legend", target: 1500 },
+];
+
+export function levelFor(gp: number) {
+  return [...LEVELS].reverse().find((l) => gp >= l.target) ?? LEVELS[0];
+}
+
+export function nextLevelFor(gp: number) {
+  return LEVELS.find((l) => l.target > gp) ?? null;
+}
+
+export type DetailKind = "goer" | "circle" | "happening" | "partner";
+export type DetailRef = { kind: DetailKind; id: string } | null;

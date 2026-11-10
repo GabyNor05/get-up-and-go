@@ -3,7 +3,7 @@ import { Building2, CalendarDays, ChevronRight, LifeBuoy, Users, UsersRound } fr
 
 import RsvpChart, { CHECKIN_COLOR, RSVP_COLOR } from "../../components/RsvpChart";
 import { formatDate, millis } from "../../lib/format";
-import { tsMillis, type CircleDoc, type HappeningDoc, type SupportTicket, type UserDoc } from "../../lib/adminData";
+import { tsMillis, type CircleDoc, type DetailRef, type HappeningDoc, type SupportTicket, type UserDoc } from "../../lib/adminData";
 
 interface AdminOverviewProps {
   users: UserDoc[];
@@ -12,9 +12,10 @@ interface AdminOverviewProps {
   tickets: SupportTicket[];
   venueNames: Map<string, string>;
   onOpen: (view: "partners" | "support" | "happenings") => void;
+  onDetail: (detail: DetailRef) => void;
 }
 
-export default function AdminOverview({ users, happenings, circles, tickets, venueNames, onOpen }: AdminOverviewProps) {
+export default function AdminOverview({ users, happenings, circles, tickets, venueNames, onOpen, onDetail }: AdminOverviewProps) {
   const stats = useMemo(() => {
     const now = Date.now();
     const partners = users.filter((u) => u.role === "partner");
@@ -104,7 +105,7 @@ export default function AdminOverview({ users, happenings, circles, tickets, ven
             ) : (
               <div className="gng-upnext gng-scroll">
                 {stats.newestPartners.slice(0, 6).map((p) => (
-                  <div key={p.id} className="gng-upnext-row">
+                  <div key={p.id} className="gng-upnext-row gng-row-click" role="button" tabIndex={0} onClick={() => onDetail({ kind: "partner", id: p.uid ?? p.id })} onKeyDown={(e) => e.key === "Enter" && onDetail({ kind: "partner", id: p.uid ?? p.id })}>
                     <span className="gng-avatar-sm">{(venueNames.get(p.uid) ?? p.username).charAt(0).toUpperCase()}</span>
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div className="gng-row-title">{venueNames.get(p.uid) ?? p.username}</div>
