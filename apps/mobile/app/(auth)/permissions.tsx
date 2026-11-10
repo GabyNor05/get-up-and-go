@@ -5,25 +5,27 @@ import { router } from "expo-router";
 import * as Location from "expo-location";
 import { Camera as ExpoCamera } from "expo-camera";
 import { auth } from "../../../../packages/firebase/src/config/firebase"; // Adjust path to your auth config
-import { goerService } from "../../../../packages/firebase/src/services/goerService"; // Adjust path to your goerService
+import { goerService } from "../../../../packages/firebase/src/services/goerService";
+import { useAppTheme } from "@/hooks/useAppTheme"; // Adjust path to your goerService
 
 interface Props {
-  darkMode: boolean;
+  darkMode?: boolean;
   onContinue?: () => void;
   onSkip?: () => void;
 }
 
-export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Props) {
+export default function PermissionsScreen({ onSkip, onContinue }: Props) {
+  const { isDark: darkMode, t } = useAppTheme();
   const [locationOn, setLocationOn] = useState(false);
   const [notifOn, setNotifOn] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const bg = darkMode ? "#1A1A1A" : "#F4F0DD";
-  const surface = darkMode ? "#24221B" : "#FAF8F0";
-  const text = darkMode ? "#FAF8F0" : "#24221B";
-  const muted = darkMode ? "#B8B6AC" : "#605E55";
-  const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
+  const bg = t.bgCanvas;
+  const surface = t.bgSurface;
+  const text = t.textPrimary;
+  const muted = t.textSecondary;
+  const border = t.borderSubtle;
 
   // Device Permission Handlers
   const toggleLocation = async () => {
@@ -73,16 +75,16 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
 
   const permissions = [
     {
-      icon: <MapPin size={24} color="#A88AED" />,
-      iconBg: "#A88AED",
+      icon: <MapPin size={24} color={t.textBrand} />,
+      iconBg: "#5B4C9E",
       title: "Location Access",
       desc: "Allow location access for Get Up & Go to suggest area specific happenings.",
       on: locationOn,
       toggle: toggleLocation,
     },
     {
-      icon: <Camera size={24} color="#A88AED" />,
-      iconBg: "#A88AED",
+      icon: <Camera size={24} color={t.textBrand} />,
+      iconBg: "#5B4C9E",
       title: "Camera Access",
       desc: "Grant camera access to scan QR codes at Happenings you attend.",
       on: cameraOn,
@@ -113,12 +115,12 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
               marginBottom: 20,
             }}
           >
-            <ShieldLock size={36} color="#A88AED" />
+            <ShieldLock size={36} color={t.textBrand} />
           </View>
           <Text
             style={{
+              fontFamily: "Fredoka-SemiBold",
               fontSize: 30,
-              fontWeight: "700",
               color: text,
               lineHeight: 34.5,
               marginBottom: 10,
@@ -188,11 +190,7 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
                   width: 50,
                   height: 28,
                   borderRadius: 14,
-                  backgroundColor: p.on
-                    ? p.iconBg
-                    : darkMode
-                    ? "rgba(250,248,240,0.12)"
-                    : "rgba(36,34,27,0.12)",
+                  backgroundColor: p.on ? t.actionPrimary : t.borderSubtle,
                   justifyContent: "center",
                 }}
               >
@@ -227,7 +225,7 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
             gap: 10,
           }}
         >
-          <Info size={20} color="#A88AED" />
+          <Info size={20} color={t.textBrand} />
           <Text style={{ fontSize: 12, color: muted, lineHeight: 18, flex: 1 }}>
             You can change these permissions anytime in your device Settings.
           </Text>
@@ -246,13 +244,17 @@ export default function PermissionsScreen({ darkMode, onSkip, onContinue }: Prop
           gap: 12,
         }}
       >
-        <Pressable onPress={handleContinue} disabled={loading} style={styles.primaryButton}>
+        <Pressable
+          onPress={handleContinue}
+          disabled={loading}
+          style={[styles.primaryButton, { backgroundColor: t.actionPrimary }]}
+        >
           {loading ? (
-            <ActivityIndicator color="#FAF8F0" />
+            <ActivityIndicator color={t.onActionPrimary} />
           ) : (
             <Text
               style={{
-                color: "#FAF8F0",
+                color: t.onActionPrimary,
                 fontSize: 16,
                 fontWeight: "700",
                 letterSpacing: 0.3,
@@ -275,7 +277,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 54,
     borderRadius: 18,
-    backgroundColor: "#A88AED",
+    backgroundColor: "#5B4C9E",
     alignItems: "center",
     justifyContent: "center",
   },

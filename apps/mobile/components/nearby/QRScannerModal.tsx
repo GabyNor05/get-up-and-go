@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal, View, Text, Pressable, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { X } from "lucide-react-native";
@@ -14,6 +14,14 @@ export default function QRScannerModal({ visible, happeningTitle, onClose, onSuc
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Each time the scanner opens, it should be ready to scan again
+  useEffect(() => {
+    if (visible) {
+      setScanned(false);
+      setLoading(false);
+    }
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -147,9 +155,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#24221B",
   },
   permissionTitle: { fontSize: 20, fontWeight: "700", color: "#FAF8F0", marginBottom: 12 },
-  permissionSub: { fontSize: 14, color: "#605E55", textAlign: "center", marginBottom: 24 },
+  permissionSub: { fontSize: 14, color: "#BDB8A6", textAlign: "center", marginBottom: 24 },
   grantBtn: { backgroundColor: "#A88AED", paddingVertical: 14, paddingHorizontal: 28, borderRadius: 14 },
-  grantBtnText: { color: "#FAF8F0", fontWeight: "700", fontSize: 16 },
+  grantBtnText: { color: "#1A1A1A", fontWeight: "700", fontSize: 16 },
   closeBtn: { marginTop: 16 },
-  closeBtnText: { color: "#605E55", fontSize: 14 },
+  closeBtnText: { color: "#BDB8A6", fontSize: 14 },
 });

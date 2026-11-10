@@ -5,6 +5,9 @@ import {
   getDocs,
   addDoc,
   updateDoc,
+  deleteDoc,
+  runTransaction,
+  increment,
   arrayUnion,
   arrayRemove,
   query,
@@ -14,9 +17,12 @@ import {
   QueryConstraint,
 } from "firebase/firestore";
 import { db } from "../config/firebase"; 
-import { Happening, HappeningCategory } from "../types/happening";
+import { Happening, HappeningCategory, HappeningUpdate } from "../types/happening";
 
 const COLLECTION_NAME = "happenings";
+export const CHECK_IN_GP = 50;
+
+export type CheckInResult = "checked_in" | "already_checked_in";
 
 // Helper to compute distance in kilometers between two GPS coordinates
 function calculateDistanceKm(
@@ -60,12 +66,13 @@ export const happeningService = {
       const data = docSnap.data();
 
       let distanceKm = 0;
-      if (userLocation && data.location?.latitude && data.location?.longitude) {
+      const coords = data.coordinates;
+      if (userLocation && coords?.latitude !== undefined && coords?.longitude !== undefined) {
         distanceKm = calculateDistanceKm(
           userLocation.latitude,
           userLocation.longitude,
-          data.location.latitude,
-          data.location.longitude
+          coords.latitude,
+          coords.longitude
         );
       }
 
@@ -134,10 +141,63 @@ export const happeningService = {
   },
 
   /**
+   * Check a Goer in and award Go-Points in one transaction.
+   * Adds the UID to `attendees` and increments goers.total_gp + monthly_gp,
+   * but never awards twice for the same Happening.
+   */
+  async checkInAndAwardGp(happeningId: string, goerUid: string): Promise<CheckInResult> {
+    const happeningRef = doc(db, COLLECTION_NAME, happeningId);
+    const goerRef = doc(db, "goers", goerUid);
+
+    return runTransaction(db, async (tx) => {
+      const happeningSnap = await tx.get(happeningRef);
+      if (!happeningSnap.exists()) throw new Error("This Happening no longer exists.");
+
+      const attendees = (happeningSnap.data().attendees as string[] | undefined) ?? [];
+      if (attendees.includes(goerUid)) return "already_checked_in";
+
+      tx.update(happeningRef, { attendees: arrayUnion(goerUid) });
+      tx.set(
+        goerRef,
+        { total_gp: increment(CHECK_IN_GP), monthly_gp: increment(CHECK_IN_GP) },
+        { merge: true }
+      );
+      return "checked_in";
+    });
+  },
+
+  /**
    * Create a new happening
    */
   async createHappening(data: Omit<Happening, "id">): Promise<string> {
     const docRef = await addDoc(collection(db, COLLECTION_NAME), data);
     return docRef.id;
+  },
+
+  /**
+   * Update the editable fields of a happening (portal)
+   */
+  async updateHappening(id: string, updates: HappeningUpdate): Promise<void> {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    await updateDoc(docRef, updates);
+  },
+
+  /**
+   * Delete a happening (portal)
+   */
+  async deleteHappening(id: string): Promise<void> {
+    await deleteDoc(doc(db, COLLECTION_NAME, id));
+  },
+
+  /**
+   * All happenings owned by one partner, soonest first.
+   * Sorted on the client so no composite Firestore index is needed.
+   */
+  async getHappeningsByPartner(partnerId: string): Promise<Happening[]> {
+    const q = query(collection(db, COLLECTION_NAME), where("partner_id", "==", partnerId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs
+      .map((d) => ({ id: d.id, ...d.data() } as Happening))
+      .sort((a, b) => a.dateTime.toMillis() - b.dateTime.toMillis());
   },
 };

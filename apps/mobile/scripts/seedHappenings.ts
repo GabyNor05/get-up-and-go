@@ -1,8 +1,12 @@
-import { collection, addDoc, Timestamp, GeoPoint } from "firebase/firestore";
+import { doc, setDoc, Timestamp, GeoPoint } from "firebase/firestore";
 import { db } from "../../../packages/firebase/src/config/firebase";
 import type { Happening } from "../../../packages/firebase/src/types/happening";
 
-export async function injectPretoriaHappenings() {
+/**
+ * Writes the demo Gauteng Happenings with fixed document ids, so running it
+ * again refreshes them (dates move relative to "now") instead of duplicating.
+ */
+export async function injectPretoriaHappenings(): Promise<number> {
   const nowMs = Date.now();
   const hourMs = 60 * 60 * 1000;
 
@@ -11,7 +15,7 @@ export async function injectPretoriaHappenings() {
     // --- YOUR ORIGINAL 7 EVENTS ---
     {
       id: "evt-usr-001",
-      partner_id: 101,
+      partner_id: "101",
       title: "Garden Social & Artisan Market",
       thumbnail_url: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=800",
       description: "Relaxed morning gathering featuring local craft stalls and fresh coffee in the garden.",
@@ -26,7 +30,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-usr-002",
-      partner_id: 102,
+      partner_id: "102",
       title: "Wild Café Acoustic Afternoon",
       thumbnail_url: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=800",
       description: "Live local acoustic sets, great food, and drinks under the trees.",
@@ -41,7 +45,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-usr-003",
-      partner_id: 103,
+      partner_id: "103",
       title: "Trail Run & Outdoor Fitness",
       thumbnail_url: "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?q=80&w=800",
       description: "Morning group trail run through Hedianga Farm followed by coffee.",
@@ -56,7 +60,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-usr-004",
-      partner_id: 104,
+      partner_id: "104",
       title: "Live Theatre & Musical Tribute",
       thumbnail_url: "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?q=80&w=800",
       description: "A high-energy live musical performance featuring hits from the 80s and 90s.",
@@ -71,7 +75,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-usr-005",
-      partner_id: 105,
+      partner_id: "105",
       title: "Friday Night Pool Tournament",
       thumbnail_url: "https://images.unsplash.com/photo-1534158914592-062992fbe900?q=80&w=800",
       description: "Eight-ball pool tournament open to all skill levels. Great prizes up for grabs!",
@@ -86,7 +90,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-usr-006",
-      partner_id: 106,
+      partner_id: "106",
       title: "Family Picnic & Kids Fun Day",
       thumbnail_url: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=800",
       description: "Bring a picnic blanket and enjoy outdoor games, play areas, and food stalls.",
@@ -101,7 +105,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-usr-007",
-      partner_id: 107,
+      partner_id: "107",
       title: "Bus Stop 7 Open-Air Market",
       thumbnail_url: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?q=80&w=800",
       description: "Fresh produce, artisanal treats, craft beer, and live entertainment for the whole family.",
@@ -118,7 +122,7 @@ export async function injectPretoriaHappenings() {
     // --- 10 ADDITIONAL PRETORIA, CENTURION, MIDRAND & JHB EVENTS ---
     {
       id: "evt-reg-008",
-      partner_id: 108,
+      partner_id: "108",
       title: "Sunset Jazz at Union Buildings",
       thumbnail_url: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800",
       description: "Relaxing evening of live jazz music on the lawns with food trucks and craft beer.",
@@ -133,7 +137,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-reg-009",
-      partner_id: 109,
+      partner_id: "109",
       title: "Hazel Food Market Saturday",
       thumbnail_url: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?q=80&w=800",
       description: "Artisanal food market with fresh bakes, international street food, and craft stalls.",
@@ -148,7 +152,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-reg-010",
-      partner_id: 110,
+      partner_id: "110",
       title: "Irene Farm Milkshake & Family Day",
       thumbnail_url: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?q=80&w=800",
       description: "A fun family day out meeting dairy cows, enjoying fresh farm treats, and picnics.",
@@ -163,7 +167,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-reg-011",
-      partner_id: 111,
+      partner_id: "111",
       title: "SuperSport Park T20 Social Cricket",
       thumbnail_url: "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?q=80&w=800",
       description: "Community T20 exhibition match with grass embankment seating and food stalls.",
@@ -178,7 +182,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-reg-012",
-      partner_id: 112,
+      partner_id: "112",
       title: "Rietvlei Dam Rhino Sanctuary Walk",
       thumbnail_url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800",
       description: "Guided game drive and birdwatching around the reservoir at Rietvlei Nature Reserve.",
@@ -193,7 +197,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-reg-013",
-      partner_id: 113,
+      partner_id: "113",
       title: "Mall of Africa Tech & Gaming Expo",
       thumbnail_url: "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?q=80&w=800",
       description: "Hands-on gaming tournaments, VR demos, and cosplay competitions.",
@@ -208,7 +212,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-reg-014",
-      partner_id: 114,
+      partner_id: "114",
       title: "Montecasino Piazza Movie Night",
       thumbnail_url: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800",
       description: "Open-air cinema screening on the outdoor piazza with beanbags and drinks.",
@@ -223,7 +227,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-reg-015",
-      partner_id: 115,
+      partner_id: "115",
       title: "Sandton City Rooftop Sunset Cocktails",
       thumbnail_url: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800",
       description: "DJ sets, craft cocktails, and skyline views across Sandton.",
@@ -238,7 +242,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-reg-016",
-      partner_id: 116,
+      partner_id: "116",
       title: "Rosebank Rooftop Sunday Market",
       thumbnail_url: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?q=80&w=800",
       description: "Rooftop market with vintage clothing, artisan food stalls, and acoustic music.",
@@ -253,7 +257,7 @@ export async function injectPretoriaHappenings() {
     },
     {
       id: "evt-reg-017",
-      partner_id: 117,
+      partner_id: "117",
       title: "Emmarentia Dam Kayak & Picnic",
       thumbnail_url: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800",
       description: "Social canoeing session on the dam followed by a picnic in the Botanic Gardens.",
@@ -270,7 +274,7 @@ export async function injectPretoriaHappenings() {
 
   for (const item of venues) {
     const eventDate = new Date(nowMs + item.offsetHours * hourMs);
-    await addDoc(collection(db, "happenings"), {
+    await setDoc(doc(db, "happenings", item.id), {
       partner_id: item.partner_id,
       title: item.title,
       thumbnail_url: item.thumbnail_url,
@@ -286,5 +290,5 @@ export async function injectPretoriaHappenings() {
     });
   }
 
-  console.log("Successfully seeded 17 Happenings adhering strictly to the model schema!");
+  return venues.length;
 }

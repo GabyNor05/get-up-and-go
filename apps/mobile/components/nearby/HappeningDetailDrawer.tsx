@@ -16,10 +16,13 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { Share2, MapPin, Clock, ThumbsUp, QrCode, Image as ImageIcon, Check } from "lucide-react-native";
-import { happeningService } from "../../../../packages/firebase/src/services/happeningService";
+import { CHECK_IN_GP, happeningService } from "../../../../packages/firebase/src/services/happeningService";
 import { Happening } from "../../../../packages/firebase/src/types/happening";
 import { useGoer } from "../../hooks/useGoer"; // Adjust path as needed
 import QRScannerModal from "./QRScannerModal";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import { circleFeedService } from "../../../../packages/firebase/src/services/circleFeedService";
+import { cancelHappeningReminder, scheduleHappeningReminder } from "@/utils/notifications";
 
 interface Props {
   darkMode: boolean;
@@ -33,6 +36,7 @@ const DISMISS_THRESHOLD = 120;
 export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Props) {
   // Use Goer details instead of standard auth user
   const { goerId, username } = useGoer();
+  const { t } = useAppTheme();
 
   const visible = eventId !== null;
   const [mounted, setMounted] = useState(visible);
@@ -116,6 +120,21 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
     setGoing(nextState);
     try {
       await happeningService.toggleRsvp(event.id, goerId, going);
+      if (nextState) {
+        const startsAt = event.dateTime?.toDate?.();
+        if (startsAt) {
+          scheduleHappeningReminder({ id: event.id, title: event.title, locationName: event.locationName, startsAt });
+        }
+        circleFeedService.postToMyCircles({
+          goerUid: goerId,
+          username,
+          type: "rsvp",
+          happeningId: event.id,
+          happeningTitle: event.title,
+        });
+      } else {
+        cancelHappeningReminder(event.id);
+      }
     } catch (err) {
       setGoing(going);
       Alert.alert("RSVP Error", "Failed to update RSVP status.");
@@ -139,9 +158,19 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
     const matchesPartner = cleanData === `partner:${event.partner_id}` || cleanData === String(event.partner_id);
 
     if (matchesEvent || matchesPartner) {
-      // Passes goerId to arrayUnion inside attendees
-      await happeningService.checkInAttendee(event.id, goerId);
-      Alert.alert("Check-in Successful!", `You are checked in to ${event.title}.`);
+      const result = await happeningService.checkInAndAwardGp(event.id, goerId);
+      if (result === "already_checked_in") {
+        Alert.alert("Already checked in", `You've already earned your Go-Points for ${event.title}.`);
+        return;
+      }
+      circleFeedService.postToMyCircles({
+        goerUid: goerId,
+        username,
+        type: "check_in",
+        happeningId: event.id,
+        happeningTitle: event.title,
+      });
+      Alert.alert(`+${CHECK_IN_GP} GP · Checked in!`, `Enjoy ${event.title}.`);
     } else {
       throw new Error("Invalid QR Code for this venue or happening.");
     }
@@ -149,10 +178,10 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
 
   if (!mounted) return null;
 
-  const surface = darkMode ? "#24221B" : "#FAF8F0";
-  const text = darkMode ? "#FAF8F0" : "#24221B";
-  const muted = "#605E55";
-  const border = darkMode ? "rgba(250,248,240,0.08)" : "rgba(36,34,27,0.08)";
+  const surface = t.bgSurface;
+  const text = t.textPrimary;
+  const muted = t.textSecondary;
+  const border = t.borderSubtle;
   const placeholderBg = darkMode ? "#3a382c" : "#dcdcdc";
 
   const formattedDate = event?.dateTime?.toDate
@@ -202,7 +231,7 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
 
             {loading || !event ? (
               <View style={{ padding: 40, alignItems: "center" }}>
-                <ActivityIndicator size="large" color="#A88AED" />
+                <ActivityIndicator size="large" color={t.textBrand} />
               </View>
             ) : (
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
@@ -239,7 +268,7 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
                     alignItems: "flex-start",
                   }}
                 >
-                  <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: 22, fontWeight: "700", color: text, flex: 1, marginRight: 12 }}>
+                  <Text style={{ fontFamily: "Fredoka-SemiBold", fontSize: 22, color: text, flex: 1, marginRight: 12 }}>
                     {event.title}
                   </Text>
                   <Pressable
@@ -262,8 +291,8 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
                 <View style={{ paddingHorizontal: 24, paddingTop: 12, gap: 8 }}>
                   {event.locationName && (
                     <Pressable onPress={handleOpenMap} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                      <MapPin size={14} color="#A88AED" />
-                      <Text style={{ fontSize: 13, color: "#A88AED", fontWeight: "600", textDecorationLine: event.google_maps_link ? "underline" : "none" }}>
+                      <MapPin size={14} color={t.textBrand} />
+                      <Text style={{ fontSize: 13, color: t.textBrand, fontWeight: "600", textDecorationLine: event.google_maps_link ? "underline" : "none" }}>
                         {event.locationName}
                       </Text>
                     </Pressable>
@@ -289,13 +318,13 @@ export default function HappeningDetailDrawer({ darkMode, eventId, onClose }: Pr
                       alignItems: "center",
                       justifyContent: "center",
                       gap: 8,
-                      backgroundColor: going ? "#A6C261" : "#A88AED",
+                      backgroundColor: going ? t.actionSecondary : t.actionPrimary,
                       borderRadius: 14,
                       paddingVertical: 14,
                     }}
                   >
-                    {going ? <Check size={16} color="#FAF8F0" /> : <ThumbsUp size={16} color="#FAF8F0" />}
-                    <Text style={{ color: "#FAF8F0", fontSize: 14, fontWeight: "700" }}>{going ? "Going" : "RSVP Yes"}</Text>
+                    {going ? <Check size={16} color={t.onActionSecondary} /> : <ThumbsUp size={16} color={t.onActionPrimary} />}
+                    <Text style={{ color: going ? t.onActionSecondary : t.onActionPrimary, fontSize: 14, fontWeight: "700" }}>{going ? "Going" : "RSVP Yes"}</Text>
                   </Pressable>
 
                   <Pressable

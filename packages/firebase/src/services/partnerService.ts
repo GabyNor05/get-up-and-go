@@ -20,11 +20,13 @@ export const partnerService = {
     
     const newPartner: Partner = {
       uid: data.uid,
+      venue_name: data.venue_name || "",
+      locationName: data.locationName || "",
       bio: data.bio || "",
       profileImg: data.profileImg || "",
       venue_images: data.venue_images || [],
       website: data.website || "",
-      google_maps_link: "",
+      google_maps_link: data.google_maps_link || "",
     };
 
     await setDoc(partnerRef, newPartner);

@@ -1,152 +1,158 @@
-import { Tabs } from 'expo-router';
 import React from 'react';
-import { View, Text } from 'react-native';
-import { House, UserRound, MapPinned, Settings, Award, LucideIcon } from "lucide-react-native";
+import { StyleSheet, Text, View } from 'react-native';
+import { Tabs } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Award, House, MapPinned, Settings, UserRound, type LucideIcon } from 'lucide-react-native';
+
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useAppTheme } from '@/hooks/useAppTheme';
+import type { SemanticTokens } from '../../../../packages/shared-ui/tokens';
 
-const BAR_BG = '#A88AED'; // Indigo Shade — matches the current solid tab bar colour
-const ACTIVE = '#A88AED'; // Indigo Core
-const ACTIVE_CHIP_BG = 'rgba(168,138,237,0.28)';
-const INACTIVE = 'rgba(36,34,27,0.4)';
-
-interface Props {
-  darkMode: boolean;
+interface TabIconProps {
+  focused: boolean;
 }
 
+const DOCK_HEIGHT = 68;
+
 /**
- * Builds a tabBarIcon renderer matching the FigmaMake nav:
- * - Home gets an elevated circular pill in Indigo Core with a white icon.
- * - Every other tab gets a rounded "chip" behind the icon when active, tinted
- *   Indigo Core, plus a small label underneath (default RN tab labels are
- *   switched off via tabBarShowLabel so this custom label doesn't double up).
+ * Floating dock icon:
+ * - Home is an elevated round pill in action-primary.
+ * - Other tabs get a subtle brand chip when active, plus a label.
  */
-function buildTabIcon(Icon: LucideIcon, label: string, isHome: boolean) {
-  return ({ focused }: { color: string; focused: boolean }) => {
+function buildTabIcon(Icon: LucideIcon, label: string, isHome: boolean, t: SemanticTokens) {
+  const TabIcon = ({ focused }: TabIconProps) => {
     if (isHome) {
       return (
-        <View
-          style={{
-            width: 52,
-            height: 52,
-            borderRadius: 26,
-            backgroundColor: ACTIVE,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: -10,
-            shadowColor: ACTIVE,
-            shadowOpacity: 0.55,
-            shadowRadius: 18,
-            shadowOffset: { width: 0, height: 4 },
-          }}
-        >
-          <Icon size={22} color="#FFFFFF" />
+        <View style={[styles.homePill, { backgroundColor: t.actionPrimary, shadowColor: t.actionPrimary }]}>
+          <Icon size={24} color={t.onActionPrimary} strokeWidth={2} />
         </View>
       );
     }
+
+    const color = focused ? t.textBrand : t.textSecondary;
     return (
-      <View style={{ alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-        <View
-          style={{
-            width: 40,
-            height: 32,
-            borderRadius: 100,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingBottom:-5,
-            backgroundColor: focused ? ACTIVE_CHIP_BG : 'transparent',
-          }}
-        >
-          <Icon size={20} color={focused ? ACTIVE : INACTIVE} />
+      <View style={styles.tabItem}>
+        <View style={[styles.chip, { backgroundColor: focused ? t.fillBrandSubtle : 'transparent' }]}>
+          <Icon size={20} color={color} strokeWidth={2} />
         </View>
-        <Text
-          style={{
-            fontSize: 10,
-            fontWeight: focused ? '700' : '400',
-            color: focused ? ACTIVE : INACTIVE,
-            letterSpacing: 0.2,
-          }}
-        >
+        <Text numberOfLines={1} style={[styles.label, { color, fontWeight: focused ? '700' : '400' }]}>
           {label}
         </Text>
       </View>
     );
   };
+  return TabIcon;
 }
 
-export default function TabLayout({darkMode}: Props) {
-  const colorScheme = useColorScheme();
-  const bg = darkMode
-    ? 'rgba(36,34,27,0.92)'
-    : 'rgba(250,248,240,0.92)';
+export default function TabLayout() {
+  const { t } = useAppTheme();
+  const insets = useSafeAreaInsets();
+
   return (
-    
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: ACTIVE,
-        tabBarInactiveTintColor: INACTIVE,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarStyle: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: "auto",
-          marginBottom: 50,
-          width: "95%",
-          borderRadius: 100,
-          backgroundColor: "#FAF8F0",
-          borderTopWidth: 0,
-          height: 68,
-          paddingHorizontal: 8,
-          overflow: 'visible',
-          shadowColor: '#000',
-          shadowOpacity: 0.25,
-          shadowRadius: 20,
-          shadowOffset: { width: 0, height: 8 },
-        },
-        tabBarItemStyle: { overflow: 'visible' },
         tabBarShowLabel: false,
+        tabBarActiveTintColor: t.textBrand,
+        tabBarInactiveTintColor: t.textSecondary,
+        tabBarItemStyle: styles.tabBarItem,
+        tabBarIconStyle: styles.tabBarIcon,
+        // Every tab screen starts below the status bar / notch
+        sceneStyle: { backgroundColor: t.bgCanvas, paddingTop: insets.top },
+        tabBarStyle: [
+          styles.dock,
+          {
+            backgroundColor: t.bgElevated,
+            marginBottom: Math.max(insets.bottom, 12),
+          },
+        ],
       }}
     >
       <Tabs.Screen
         name="(achievements)/index"
-        options={{
-          title: 'Achievements',
-          tabBarIcon: buildTabIcon(Award, 'Go-Points', false),
-        }}
+        options={{ title: 'Go-Points', tabBarIcon: buildTabIcon(Award, 'Go-Points', false, t) }}
       />
       <Tabs.Screen
         name="nearby"
-        options={{
-          title: 'Nearby',
-          tabBarIcon: buildTabIcon(MapPinned, 'Nearby', false),
-        }}
+        options={{ title: 'Nearby', tabBarIcon: buildTabIcon(MapPinned, 'Nearby', false, t) }}
       />
       <Tabs.Screen
         name="(home)/index"
-        options={{
-          title: 'Home',
-          tabBarIcon: buildTabIcon(House, 'Home', true),
-        }}
+        options={{ title: 'Home', tabBarIcon: buildTabIcon(House, 'Home', true, t) }}
       />
       <Tabs.Screen
         name="(circles)"
-        options={{
-          title: 'My Circles',
-          tabBarIcon: buildTabIcon(UserRound, 'Circles', false),
-        }}
+        options={{ title: 'Circles', tabBarIcon: buildTabIcon(UserRound, 'Circles', false, t) }}
       />
       <Tabs.Screen
         name="(settings)/index"
-        options={{
-          title: 'Settings',
-          tabBarIcon: buildTabIcon(Settings, 'Settings', false),
-        }}
+        options={{ title: 'Settings', tabBarIcon: buildTabIcon(Settings, 'Settings', false, t) }}
       />
-      
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  dock: {
+    marginHorizontal: '2.5%',
+    width: '95%',
+    height: DOCK_HEIGHT,
+    borderRadius: 999,
+    borderTopWidth: 0,
+    paddingHorizontal: 8,
+    paddingTop: 0,
+    paddingBottom: 0,
+    overflow: 'visible',
+    shadowColor: '#24221B',
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
+  },
+  tabBarItem: {
+    overflow: 'visible',
+    height: DOCK_HEIGHT,
+    paddingTop: 0,
+    paddingBottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // The default icon wrapper is ~28px tall and top-anchored, which pushed
+  // our taller icon+label off-centre. Let it fill the dock instead.
+  tabBarIcon: {
+    width: '100%',
+    height: DOCK_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  homePill: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -12,
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  tabItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    minWidth: 64,
+  },
+  chip: {
+    width: 44,
+    height: 30,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  label: {
+    fontSize: 12,
+    letterSpacing: 0.2,
+  },
+});
